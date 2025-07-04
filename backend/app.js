@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
 // Global Catch
 app.use((req, res, err) => {
 	res.status(400).json({
-		message: `Something Broke ${err.message}`
+		message: `Something Broke ${err}`
 	})
 })
 
