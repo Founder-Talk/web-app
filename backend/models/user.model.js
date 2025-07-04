@@ -18,6 +18,14 @@ const userSchema = new mongoose.Schema(
         "Please enter a valid Email Address!",
       ],
     },
+    role: {
+      type: String,
+      enum: ["mentee", "mentor", "admin"], // Only Mentee, Mentor in User Interface
+      default: "mentee",
+    },
+    profilePic: {
+      type: String // cloudinary url
+    },
     password: {
       type: String,
       trim: true,
