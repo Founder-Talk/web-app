@@ -1,14 +1,24 @@
 {
-  "name": "founderstalk-backend",
+  "name": "backend",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "description": "",
+  "license": "ISC",
+  "author": "",
   "type": "commonjs",
+  "main": "app.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.10.0"
+    "bcrypt": "^5.1.1",
+    "debug": "^4.4.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.13.0",
+    "mongoose": "^8.9.6",
+    "zod": "^3.24.1"
   }
-} 
+}
