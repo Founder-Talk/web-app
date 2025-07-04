@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, ArrowRight, Moon, Sun } from "lucide-react"
@@ -139,7 +141,7 @@ export default function FoundertalkLanding() {
 
               {/* Get Started Button */}
               <Button
-                onClick={() => scrollToSection("how-it-works")}
+                onClick={() => (window.location.href = "/login")}
                 className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full px-6 font-semibold"
               >
                 Get Started
@@ -175,7 +177,7 @@ export default function FoundertalkLanding() {
                   </button>
                 </div>
                 <Button
-                  onClick={() => scrollToSection("how-it-works")}
+                  onClick={() => (window.location.href = "/login")}
                   className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full font-semibold"
                 >
                   Get Started
@@ -220,7 +222,7 @@ export default function FoundertalkLanding() {
               transition={{ duration: 0.8, delay: 1.2 }}
             >
               <Button
-                onClick={() => scrollToSection("how-it-works")}
+                onClick={() => (window.location.href = "/login")}
                 className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full px-8 py-6 text-lg font-semibold group"
               >
                 Browse Mentors
