@@ -26,6 +26,15 @@ const userSchema = new mongoose.Schema(
     profilePic: {
       type: String // cloudinary url
     },
+    company: {
+      type: String,
+      trim: true,
+      default: "Not Specified"
+    },
+    experience: {
+      type: Number,
+      min: [0, "Experience cannot be negative"] 
+    },
     password: {
       type: String,
       trim: true,
