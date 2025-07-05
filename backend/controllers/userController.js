@@ -11,6 +11,8 @@ const userSignup = async (req, res) => {
         const schema = (z.object({
             name: z.string(),
             email: z.string().email(),
+            role: z.enum(["mentee", "mentor"]).optional(), // Optional
+            profilePic: z.string().url().optional(), // Optional
             password: z.string().min(6)
         })).strict(); // Disallow unknown keys
 
@@ -21,7 +23,7 @@ const userSignup = async (req, res) => {
                 data
             });
         }
-        const { name, email, password } = data;
+        const { name, email, role, password } = data;
         const user = await User.find({ email });
 
         if (user.length > 0) {
@@ -35,6 +37,7 @@ const userSignup = async (req, res) => {
         const createdUser = await User.create({
             name,
             email,
+            role,
             password: hashedPassword
         });
 
@@ -42,6 +45,7 @@ const userSignup = async (req, res) => {
             _id: createdUser._id,
             name: createdUser.name,
             email: createdUser.email,
+            role: createdUser.role,
             token: generateToken(createdUser._id, createdUser.email)
         });
 
@@ -112,7 +116,7 @@ const logout = (req, res) => {
     try {
         // Clear the token from the client side
         // res.clearCookie("token"); // If using cookies
-        
+
         return res.status(200).json({
             message: "Logged out successfully. Please remove the token from client storage."
         });
