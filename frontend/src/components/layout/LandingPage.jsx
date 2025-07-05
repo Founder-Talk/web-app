@@ -84,7 +84,7 @@ export default function FoundertalkLanding() {
   const mutedTextClass = isDarkMode ? "text-gray-400" : "text-gray-600"
 
   return (
-    <div className={`min-h-screen ${bgClass} ${textClass} relative overflow-hidden transition-colors duration-300`}>
+    <div className={`min-h-screen ${bgClass} ${textClass} relative beams-bg overflow-hidden transition-colors duration-300`}>
       {/* Enhanced Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div
@@ -109,8 +109,8 @@ export default function FoundertalkLanding() {
       </div>
 
       {/* Header */}
-      <header
-        className={`sticky top-0 z-50 backdrop-blur-xl ${isDarkMode ? "bg-black/80 border-gray-900/50" : "bg-white/80 border-gray-200/50"} border-b`}
+      <header 
+        className={`fixed top-0 z-50 w-full  shadow-lg shadow-white/5 backdrop-blur-sm ${isDarkMode ? "bg-black/10 border-gray-900/50" : "bg-white/80 border-gray-200/50"} border-b`}
       >
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
