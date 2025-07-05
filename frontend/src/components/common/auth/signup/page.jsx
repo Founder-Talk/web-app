@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Eye, EyeOff, Users, GraduationCap, Check, Star, Zap, Shield } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import axios from "axios"
+
+
 
 export default function SignupPage() {
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -14,6 +17,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -35,14 +39,32 @@ export default function SignupPage() {
     })
   }
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault()
+  //   setIsLoading(true)
+  //   // Simulate API call
+  //   await new Promise((resolve) => setTimeout(resolve, 2000))
+  //   console.log("Form submitted:", { ...formData, role: selectedRole })
+  //   setIsLoading(false)
+  // }
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    console.log("Form submitted:", { ...formData, role: selectedRole })
-    setIsLoading(false)
+  e.preventDefault();
+  setIsLoading(true);
+  navigate()
+
+  try {
+    const res = await axios.post("http://localhost:3000/user/signup", { name: `${formData.firstName} ${formData.lastName}`,email: formData.email, password: formData.password,role: selectedRole,});
+
+    console.log("Signup success:", res.data);    
+    localStorage.setItem("token", res.data.token);
+    
+  } catch (err) {
+    console.error(" Signup failed:", err.response?.data || err.message);
+    alert(err.response?.data?.message || "Signup failed");
+  } finally {
+    setIsLoading(false);
   }
+}
 
   const roleFeatures = {
     mentor: [
