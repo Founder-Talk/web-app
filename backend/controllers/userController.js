@@ -61,7 +61,8 @@ const userSignin = async (req, res) => {
         /* Zod Validation */
         const schema = (z.object({
             email: z.string().email(),
-            password: z.string().min(6)
+            password: z.string().min(6),
+            role: z.enum(["mentee", "mentor"]).optional(),
         })).strict(); // Disallow unknown keys
 
         const { success, data, error } = schema.safeParse(req.body);

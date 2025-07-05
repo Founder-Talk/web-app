@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, Eye, EyeOff, Users, GraduationCap, LogIn } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
+import axios from "axios"
 
 export default function LoginPage() {
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -29,14 +30,39 @@ export default function LoginPage() {
     })
   }
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault()
+  //   setIsLoading(true)
+  //   // Simulate API call
+  //   await new Promise((resolve) => setTimeout(resolve, 2000))
+  //   console.log("Login submitted:", { ...formData, role: selectedRole })
+  //   setIsLoading(false)
+  // }
+
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    console.log("Login submitted:", { ...formData, role: selectedRole })
+  e.preventDefault()
+  setIsLoading(true)
+
+  try {
+    const res = await axios.post("http://localhost:3000/user/signin", {
+      email: formData.email,
+      password: formData.password,
+      role: selectedRole,  // include role here
+    })
+
+    localStorage.setItem("token", res.data.token)
+    console.log("signed in");
+    
+    // navigate("/dashboard") // or navigate by role: /mentor or /mentee
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed")
+    console.log(err);
+    
+  } finally {
     setIsLoading(false)
   }
+}
+
 
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} relative overflow-hidden transition-colors duration-300`}>
