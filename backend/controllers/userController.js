@@ -12,6 +12,8 @@ const userSignup = async (req, res) => {
             name: z.string(),
             email: z.string().email(),
             role: z.enum(["mentee", "mentor"]).optional(), // Optional
+            company: z.string().optional(), // Optional
+            experience: z.number().optional(), 
             profilePic: z.string().url().optional(), // Optional
             password: z.string().min(6)
         })).strict(); // Disallow unknown keys
@@ -23,7 +25,7 @@ const userSignup = async (req, res) => {
                 data
             });
         }
-        const { name, email, role, password } = data;
+        const { name, email, role, company, experience, password } = data;
         const user = await User.find({ email });
 
         if (user.length > 0) {
@@ -38,6 +40,8 @@ const userSignup = async (req, res) => {
             name,
             email,
             role,
+            company,
+            experience,
             password: hashedPassword
         });
 
@@ -46,6 +50,8 @@ const userSignup = async (req, res) => {
             name: createdUser.name,
             email: createdUser.email,
             role: createdUser.role,
+            company: createdUser.company,
+            experience: createdUser.experience,
             token: generateToken(createdUser._id, createdUser.email)
         });
 
