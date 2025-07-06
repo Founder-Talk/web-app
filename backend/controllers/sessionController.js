@@ -24,8 +24,8 @@ const createSession = async (req, res) => {
 
         const { mentorId, title, description, scheduledDate, duration, sessionType } = data;
 
-        // Check if mentor exists and is verified
-        const mentor = await User.findOne({ _id: mentorId, role: "mentor", isVerified: true });
+        // Check if mentor exists
+        const mentor = await User.findOne({ _id: mentorId, role: "mentor"});
         if (!mentor) {
             return res.status(404).json({
                 message: "Mentor not found or not verified"

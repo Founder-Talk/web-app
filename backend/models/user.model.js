@@ -83,10 +83,10 @@ const userSchema = new mongoose.Schema(
         endTime: String
       }]
     }],
-    isVerified: {
-      type: Boolean,
-      default: false
-    },
+    // isVerified: {
+    //   type: Boolean,
+    //   default: false
+    // },
     rating: {
       type: Number,
       default: 0,
@@ -108,7 +108,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    emailVerificationToken: String,
+    emailVerificationOTP: String, // 6-digit OTP
     emailVerificationExpires: Date
   },
   {

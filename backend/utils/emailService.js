@@ -14,50 +14,33 @@ const createTransporter = () => {
     });
 };
 
-// Send email verification
-const sendVerificationEmail = async (email, token, name) => {
+// Send email verification (OTP)
+const sendVerificationEmail = async (email, otp, name) => {
     try {
-        // Check if email configuration is available
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
             console.error('Email configuration missing. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.');
             return false;
         }
-
         const transporter = createTransporter();
-        
-        // Use backend URL for verification with token as query parameter
-        const verificationUrl = `${process.env.BACKEND_URL || 'http://localhost:3000'}/user/verify-email?token=${token}`;
-        
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Verify Your Email - FoundersTalk Platform',
+            subject: 'Your FoundersTalk Email Verification OTP',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
                         <h2 style="color: #333; margin-bottom: 20px;">Welcome to FoundersTalk!</h2>
                         <p style="font-size: 16px; color: #666; margin-bottom: 20px;">Hi ${name},</p>
-                        <p style="font-size: 16px; color: #666; margin-bottom: 30px;">Thank you for signing up! Please verify your email address by clicking the button below:</p>
-                        
-                        <a href="${verificationUrl}" 
-                           style="display: inline-block; background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin: 20px 0;">
-                            Verify Email Address
-                        </a>
-                        
-                        <div style="margin-top: 30px; padding: 20px; background-color: white; border-radius: 8px;">
-                            <p style="font-size: 14px; color: #666; margin-bottom: 15px;">If the button doesn't work, you can copy and paste this link into your browser:</p>
-                            <p style="font-size: 12px; color: #007bff; word-break: break-all;">${verificationUrl}</p>
-                        </div>
-                        
-                        <p style="font-size: 14px; color: #999; margin-top: 30px;">This link will expire in 24 hours.</p>
+                        <p style="font-size: 16px; color: #666; margin-bottom: 30px;">Your email verification OTP is:</p>
+                        <div style="font-size: 2.5rem; font-weight: bold; color: #007bff; margin: 20px 0; letter-spacing: 8px;">${otp}</div>
+                        <p style="font-size: 14px; color: #999; margin-top: 30px;">This OTP will expire in 15 minutes.</p>
                         <p style="font-size: 14px; color: #999;">Best regards,<br>The FoundersTalk Team</p>
                     </div>
                 </div>
             `
         };
-
         const result = await transporter.sendMail(mailOptions);
-        console.log('Verification email sent successfully to:', email);
+        console.log('Verification OTP sent successfully to:', email);
         return true;
     } catch (error) {
         console.error('Email sending failed:', error);
