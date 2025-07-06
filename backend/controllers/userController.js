@@ -108,6 +108,7 @@ const userSignin = async (req, res) => {
             return res.status(200).json({
                 _id: user._id,
                 email: user.email,
+                role: user.role,
                 token: token
             });
         }
