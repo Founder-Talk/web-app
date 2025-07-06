@@ -1,7 +1,9 @@
 const User = require("../models/user.model");
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const { z } = require("zod");
 const generateToken = require("../utils/generateToken");
+const { sendVerificationEmail } = require("../utils/emailService");
 const saltRounds = 10;
 
 /* Signup and Signin Controllers */
@@ -36,14 +38,29 @@ const userSignup = async (req, res) => {
 
         const salt = await bcrypt.genSalt(saltRounds);
         const hashedPassword = await bcrypt.hash(password, salt);
+        
+        // Generate email verification token
+        const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        
         const createdUser = await User.create({
             name,
             email,
             role,
             company,
             experience,
-            password: hashedPassword
+            password: hashedPassword,
+            emailVerificationToken,
+            emailVerificationExpires
         });
+
+        // Send verification email
+        const emailSent = await sendVerificationEmail(email, emailVerificationToken, name);
+        
+        if (!emailSent) {
+            // If email fails, still create user but log the error
+            console.error('Failed to send verification email to:', email);
+        }
 
         return res.status(201).json({
             _id: createdUser._id,
@@ -52,7 +69,8 @@ const userSignup = async (req, res) => {
             role: createdUser.role,
             company: createdUser.company,
             experience: createdUser.experience,
-            token: generateToken(createdUser._id, createdUser.email)
+            isEmailVerified: createdUser.isEmailVerified,
+            message: emailSent ? "Account created successfully! Please check your email to verify your account." : "Account created successfully! Please check your email to verify your account (email delivery may be delayed)."
         });
 
     } catch (err) {
@@ -87,30 +105,45 @@ const userSignin = async (req, res) => {
             });
         }
 
-
         const result = await bcrypt.compare(password, user.password);
         if (!result) {
             return res.status(401).json({
                 message: "Wrong password"
             });
-        } else {
-            const token = generateToken(user._id, user.email);
-            /*             
-            Note: 
-            If you’re building a traditional web app with server - rendered pages(e.g., EJS, Express), use cookies(res.cookie("token", token)) with HttpOnly, Secure, and SameSite = Strict for better security.
-            If you’re building a REST API or SPA(e.g., React, Angular, Vue), use the Authorization header(req.headers.authorization = Bearer ${ token }) for flexibility and CORS compatibility. 
-            */
+        }
 
-            // res.cookie("token", token); 
-            // req.headers.authorization = `Bearer ${token}`;  /* To be done in React.js; not here. */
-            // console.log(req.headers.authorization);         /* NEVER PASS IT HERE */
-
-            return res.status(200).json({
-                _id: user._id,
-                email: user.email,
-                token: token
+        // Check if email is verified
+        if (!user.isEmailVerified) {
+            return res.status(401).json({
+                message: "Please verify your email address before signing in. Check your inbox for the verification link.",
+                isEmailVerified: false
             });
         }
+
+        const token = generateToken(user._id, user.email);
+
+        return res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            company: user.company,
+            experience: user.experience,
+            bio: user.bio,
+            education: user.education,
+            goals: user.goals,
+            areasOfInterest: user.areasOfInterest,
+            domainExpertise: user.domainExpertise,
+            linkedinProfile: user.linkedinProfile,
+            hourlyRate: user.hourlyRate,
+            availability: user.availability,
+            isVerified: user.isVerified,
+            rating: user.rating,
+            totalSessions: user.totalSessions,
+            subscriptionPlan: user.subscriptionPlan,
+            isEmailVerified: user.isEmailVerified,
+            token: token
+        });
 
     } catch (err) {
         return res.status(500).json({
@@ -121,11 +154,314 @@ const userSignin = async (req, res) => {
 
 const logout = (req, res) => {
     try {
-        // Clear the token from the client side
-        // res.clearCookie("token"); // If using cookies
-
         return res.status(200).json({
             message: "Logged out successfully. Please remove the token from client storage."
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Get user profile
+const getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        res.status(200).json(user);
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Update user profile
+const updateUserProfile = async (req, res) => {
+    try {
+        const schema = z.object({
+            name: z.string().optional(),
+            bio: z.string().max(500).optional(),
+            education: z.string().optional(),
+            goals: z.string().max(300).optional(),
+            areasOfInterest: z.array(z.string()).optional(),
+            company: z.string().optional(),
+            experience: z.number().min(0).optional(),
+            profilePic: z.string().url().optional(),
+            // Mentor specific fields
+            domainExpertise: z.array(z.string()).optional(),
+            linkedinProfile: z.string().optional(),
+            hourlyRate: z.number().min(0).optional(),
+            availability: z.array(z.object({
+                day: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+                slots: z.array(z.object({
+                    startTime: z.string(),
+                    endTime: z.string()
+                }))
+            })).optional()
+        }).strict();
+
+        const { success, data, error } = schema.safeParse(req.body);
+        if (error || !success) {
+            return res.status(400).json({
+                message: "Invalid data provided"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: data },
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Get all mentors (for mentee dashboard)
+const getAllMentors = async (req, res) => {
+    try {
+        const { 
+            search, 
+            expertise, 
+            minRating, 
+            maxRate, 
+            page = 1, 
+            limit = 10 
+        } = req.query;
+
+        const query = { role: "mentor", isVerified: true };
+        
+        // Search by name or bio
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { bio: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Filter by expertise
+        if (expertise) {
+            query.domainExpertise = { $in: [expertise] };
+        }
+
+        // Filter by minimum rating
+        if (minRating) {
+            query.rating = { $gte: parseFloat(minRating) };
+        }
+
+        // Filter by maximum hourly rate
+        if (maxRate) {
+            query.hourlyRate = { $lte: parseFloat(maxRate) };
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        
+        const mentors = await User.find(query)
+            .select('name bio domainExpertise hourlyRate rating totalSessions profilePic company experience')
+            .skip(skip)
+            .limit(parseInt(limit))
+            .sort({ rating: -1, totalSessions: -1 });
+
+        const total = await User.countDocuments(query);
+
+        res.status(200).json({
+            mentors,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                totalMentors: total,
+                hasNext: skip + mentors.length < total,
+                hasPrev: parseInt(page) > 1
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Get mentor details
+const getMentorDetails = async (req, res) => {
+    try {
+        const { mentorId } = req.params;
+        
+        const mentor = await User.findOne({ 
+            _id: mentorId, 
+            role: "mentor", 
+            isVerified: true 
+        }).select('-password');
+
+        if (!mentor) {
+            return res.status(404).json({
+                message: "Mentor not found"
+            });
+        }
+
+        res.status(200).json(mentor);
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Update subscription plan
+const updateSubscriptionPlan = async (req, res) => {
+    try {
+        const { subscriptionPlan } = req.body;
+        
+        if (!["free", "pro"].includes(subscriptionPlan)) {
+            return res.status(400).json({
+                message: "Invalid subscription plan"
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { subscriptionPlan },
+            { new: true }
+        ).select('-password');
+
+        res.status(200).json({
+            message: "Subscription plan updated successfully",
+            subscriptionPlan: user.subscriptionPlan
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+// Verify email address
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        if (!token) {
+            // HTML for missing token
+            if (req.headers.accept && req.headers.accept.includes('text/html')) {
+                return res.status(400).send(`
+                    <html><head><title>Email Verification</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">
+                    <h2 style="color:#dc3545;">Invalid Verification Link</h2>
+                    <p>The verification link is missing or invalid.</p>
+                    </body></html>
+                `);
+            }
+            return res.status(400).json({ message: "Verification token is required" });
+        }
+        const user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpires: { $gt: Date.now() }
+        });
+        if (!user) {
+            // HTML for invalid/expired token
+            if (req.headers.accept && req.headers.accept.includes('text/html')) {
+                return res.status(400).send(`
+                    <html><head><title>Email Verification</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">
+                    <h2 style="color:#dc3545;">Invalid or Expired Link</h2>
+                    <p>This verification link is invalid or has expired. Please request a new one.</p>
+                    </body></html>
+                `);
+            }
+            return res.status(400).json({ message: "Invalid or expired verification token" });
+        }
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save();
+        // HTML for success
+        if (req.headers.accept && req.headers.accept.includes('text/html')) {
+            return res.status(200).send(`
+                <html><head><title>Email Verified</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">
+                <h2 style="color:#28a745;">Email Verified!</h2>
+                <p>Your email has been successfully verified. You can now sign in to your account.</p>
+                </body></html>
+            `);
+        }
+        return res.status(200).json({
+            message: "Email verified successfully! You can now sign in to your account.",
+            isEmailVerified: true
+        });
+    } catch (err) {
+        // HTML for server error
+        if (req.headers.accept && req.headers.accept.includes('text/html')) {
+            return res.status(500).send(`
+                <html><head><title>Email Verification Error</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">
+                <h2 style="color:#dc3545;">Server Error</h2>
+                <p>Something went wrong. Please try again later.</p>
+                </body></html>
+            `);
+        }
+        return res.status(500).json({ message: err.message });
+    }
+}
+
+// Resend verification email
+const resendVerificationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
+        }
+
+        const user = await User.findOne({ email });
+        
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        if (user.isEmailVerified) {
+            return res.status(400).json({
+                message: "Email is already verified"
+            });
+        }
+
+        // Generate new verification token
+        const crypto = require('crypto');
+        const emailVerificationToken = crypto.randomBytes(6).toString('hex');
+        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        // Update user with new token
+        user.emailVerificationToken = emailVerificationToken;
+        user.emailVerificationExpires = emailVerificationExpires;
+        await user.save();
+
+        // Send verification email
+        const emailSent = await sendVerificationEmail(email, emailVerificationToken, user.name);
+        
+        if (!emailSent) {
+            return res.status(500).json({
+                message: "Failed to send verification email. Please try again later."
+            });
+        }
+
+        res.status(200).json({
+            message: "Verification email sent successfully! Please check your inbox."
         });
     } catch (err) {
         return res.status(500).json({
@@ -137,5 +473,12 @@ const logout = (req, res) => {
 module.exports = {
     userSignin,
     userSignup,
-    logout
+    logout,
+    getUserProfile,
+    updateUserProfile,
+    getAllMentors,
+    getMentorDetails,
+    updateSubscriptionPlan,
+    verifyEmail,
+    resendVerificationEmail
 }

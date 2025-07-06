@@ -17,11 +17,20 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Import routes
 const userRoute = require("./routes/user.routes");
+const sessionRoute = require("./routes/session.routes");
+const messageRoute = require("./routes/message.routes");
+const adminRoute = require("./routes/admin.routes");
+
+// Use routes
 app.use("/user", userRoute);
+app.use("/session", sessionRoute);
+app.use("/message", messageRoute);
+app.use("/admin", adminRoute);
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the Authentication API");
+  res.send("Welcome to the Mentorship Platform API");
 });
 
 // ✅ Global Catch/Error Handler
@@ -31,6 +40,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   dbgr(`Server running on http://localhost:${PORT}`);
 });
+
+// Initialize Socket.io
+const { initializeSocket } = require("./utils/socketService");
+initializeSocket(server);
