@@ -6,18 +6,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Eye, EyeOff, Users, GraduationCap, LogIn } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Link } from "react-router-dom"
-import axios from "axios"
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "../../../../contexts/AuthContext"
 
 export default function LoginPage() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [selectedRole, setSelectedRole] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const bgClass = isDarkMode ? "bg-black" : "bg-white"
   const textClass = isDarkMode ? "text-white" : "text-gray-900"
@@ -28,41 +33,31 @@ export default function LoginPage() {
       ...formData,
       [e.target.name]: e.target.value,
     })
+    // Clear error when user starts typing
+    if (error) setError("");
   }
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   setIsLoading(true)
-  //   // Simulate API call
-  //   await new Promise((resolve) => setTimeout(resolve, 2000))
-  //   console.log("Login submitted:", { ...formData, role: selectedRole })
-  //   setIsLoading(false)
-  // }
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setIsLoading(true)
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
 
-  try {
-    const res = await axios.post("http://localhost:3000/user/signin", {
-      email: formData.email,
-      password: formData.password,
-      role: selectedRole,  // include role here
-    })
-
-    localStorage.setItem("token", res.data.token)
-    console.log("signed in");
-    
-    // navigate("/dashboard") // or navigate by role: /mentor or /mentee
-  } catch (err) {
-    alert(err.response?.data?.message || "Login failed")
-    console.log(err);
-    
-  } finally {
-    setIsLoading(false)
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
+        // Navigate to the intended page or dashboard
+        const from = location.state?.from?.pathname || "/dashboard";
+        navigate(from, { replace: true });
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false)
+    }
   }
-}
-
 
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} relative overflow-hidden transition-colors duration-300`}>
@@ -198,19 +193,12 @@ export default function LoginPage() {
                   transition={{ delay: 0.6 }}
                   className="mt-8 text-center"
                 >
-                  <p className={`${mutedTextClass} text-sm`}>Trusted by 500+ founders worldwide</p>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="mt-6 text-center"
-                >
-                  <Link  to ="/signup" className={`${mutedTextClass} hover:${textClass} transition-colors font-medium`}>
+                  <p className={`${mutedTextClass} text-sm`}>
                     Don't have an account?{" "}
-                    <span className="text-[#ff9ec6] font-semibold hover:underline">Sign up here</span>
-                  </Link>
+                    <Link to="/signup" className="text-[#ff9ec6] hover:text-[#ff9ec6]/80 transition-colors font-medium">
+                      Sign up here
+                    </Link>
+                  </p>
                 </motion.div>
               </div>
             </motion.div>
@@ -224,128 +212,117 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 30 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="w-full max-w-lg"
+              className="w-full max-w-md"
             >
               <div
-                className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/20 border-gray-800/20" : "bg-white/40 border-gray-200/30"} rounded-3xl p-8 md:p-12 border shadow-2xl`}
+                className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/20 border-gray-800/20" : "bg-white/40 border-gray-200/30"} rounded-3xl p-8 border shadow-2xl`}
               >
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                      {selectedRole === "mentor" ? "Mentor" : "Mentee"} Login
-                    </h1>
-                    <p className={`${mutedTextClass} text-lg`}>
-                      Welcome back! Ready to {selectedRole === "mentor" ? "mentor" : "grow"}?
-                    </p>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedRole(null)}
-                    className={`${mutedTextClass} hover:${textClass} transition-colors text-sm font-medium px-4 py-2 rounded-full border ${isDarkMode ? "border-gray-700/50 hover:border-gray-600/50" : "border-gray-300/50 hover:border-gray-400/50"}`}
+                <div className="text-center mb-8">
+                  <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-[#ff9ec6] to-white bg-clip-text text-transparent"
                   >
-                    Change role
-                  </motion.button>
+                    Sign In
+                  </motion.h1>
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className={`${mutedTextClass} text-sm`}
+                  >
+                    Welcome back as a {selectedRole}
+                  </motion.p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="email" className={`${textClass} font-medium`}>
+                  {/* Email */}
+                  <div>
+                    <Label htmlFor="email" className={`text-sm font-medium ${textClass}`}>
                       Email Address
                     </Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
-                      required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className={`${isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-[#ff9ec6]/50" : "bg-white/50 border-gray-300/50 text-gray-900 placeholder:text-gray-500 focus:border-[#ff9ec6]/50"} backdrop-blur-sm h-12 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-[#ff9ec6]/20`}
-                      placeholder="john@example.com"
+                      placeholder="Enter your email"
+                      className={`mt-1 ${isDarkMode ? "bg-gray-800/50 border-gray-700 text-white placeholder-gray-400" : "bg-white/50 border-gray-300 text-gray-900 placeholder-gray-500"} border focus:border-[#ff9ec6] focus:ring-[#ff9ec6]`}
+                      required
                     />
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password" className={`${textClass} font-medium`}>
-                        Password
-                      </Label>
-                      <a  to ="#" className="text-[#ff9ec6] hover:underline text-sm font-medium">
-                        Forgot password?
-                      </a>
-                    </div>
-                    <div className="relative">
+                  {/* Password */}
+                  <div>
+                    <Label htmlFor="password" className={`text-sm font-medium ${textClass}`}>
+                      Password
+                    </Label>
+                    <div className="relative mt-1">
                       <Input
                         id="password"
                         name="password"
                         type={showPassword ? "text" : "password"}
-                        required
                         value={formData.password}
                         onChange={handleInputChange}
-                        className={`${isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-[#ff9ec6]/50" : "bg-white/50 border-gray-300/50 text-gray-900 placeholder:text-gray-500 focus:border-[#ff9ec6]/50"} backdrop-blur-sm h-12 rounded-xl pr-12 transition-all duration-300 focus:ring-2 focus:ring-[#ff9ec6]/20`}
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
+                        className={`pr-10 ${isDarkMode ? "bg-gray-800/50 border-gray-700 text-white placeholder-gray-400" : "bg-white/50 border-gray-300 text-gray-900 placeholder-gray-500"} border focus:border-[#ff9ec6] focus:ring-[#ff9ec6]`}
+                        required
                       />
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${mutedTextClass} hover:${textClass} transition-colors p-1 rounded-full`}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </motion.button>
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-[#ff9ec6] to-[#ff9ec6]/80 text-black hover:from-[#ff9ec6]/90 hover:to-[#ff9ec6]/70 rounded-xl py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  {/* Error Message */}
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-red-500/10 border border-red-500/20 rounded-lg p-3"
                     >
-                      {isLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                          <span>Signing In...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center space-x-2">
-                          <span>Sign In</span>
-                          <LogIn className="h-5 w-5" />
-                        </div>
-                      )}
-                    </Button>
-                  </motion.div>
+                      <p className="text-red-400 text-sm">{error}</p>
+                    </motion.div>
+                  )}
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35 }}
-                    className="text-center"
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#ff9ec6] hover:bg-[#ff9ec6]/90 text-black font-semibold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Link
-                       to ="/signup"
-                      className={`${mutedTextClass} hover:${textClass} transition-colors font-medium`}
-                    >
-                      Don't have an account?{" "}
-                      <span className="text-[#ff9ec6] font-semibold hover:underline">Sign up here</span>
-                    </Link>
-                  </motion.div>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                        Signing in...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <LogIn className="h-5 w-5 mr-2" />
+                        Sign In
+                      </div>
+                    )}
+                  </Button>
                 </form>
+
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setSelectedRole(null)}
+                    className={`text-sm ${mutedTextClass} hover:text-[#ff9ec6] transition-colors`}
+                  >
+                    ← Back to role selection
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

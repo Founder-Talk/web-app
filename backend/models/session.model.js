@@ -10,8 +10,34 @@ const sessionSchema = new mongoose.Schema(
     mentee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      // Required only for 1-on-1 sessions
+    },
+    // New fields for hybrid approach
+    sessionMode: {
+      type: String,
+      enum: ["one-on-one", "group"],
       required: true
     },
+    maxParticipants: {
+      type: Number,
+      min: [1, "Must have at least 1 participant"],
+      default: 1
+    },
+    participants: [{
+      mentee: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      joinedAt: {
+        type: Date,
+        default: Date.now
+      },
+      status: {
+        type: String,
+        enum: ["joined", "attended", "no-show"],
+        default: "joined"
+      }
+    }],
     title: {
       type: String,
       required: true,
@@ -33,7 +59,7 @@ const sessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "completed", "cancelled"],
+      enum: ["pending", "accepted", "rejected", "completed", "cancelled", "open", "full"],
       default: "pending"
     },
     sessionType: {
@@ -94,6 +120,7 @@ const sessionSchema = new mongoose.Schema(
 sessionSchema.index({ mentor: 1, scheduledDate: 1 });
 sessionSchema.index({ mentee: 1, scheduledDate: 1 });
 sessionSchema.index({ status: 1 });
+sessionSchema.index({ sessionMode: 1 });
 
 const Session = mongoose.model("Session", sessionSchema);
 
