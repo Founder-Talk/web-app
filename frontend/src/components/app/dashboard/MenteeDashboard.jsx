@@ -976,7 +976,7 @@ export default function Dashboard() {
               <div className="p-6 space-y-8">
                 {/* Rating Filter */}
                 <div>
-                  <label className="block text-lg font-semibold mb-4 flex items-center space-x-2">
+                  <label className=" text-lg font-semibold mb-4 flex items-center space-x-2">
                     <Star className="h-5 w-5 text-[#ff9ec6]" />
                     <span>Minimum Rating</span>
                   </label>
@@ -996,7 +996,7 @@ export default function Dashboard() {
 
                 {/* Price Range Filter */}
                 <div>
-                  <label className="block text-lg font-semibold mb-4 flex items-center space-x-2">
+                  <label className=" text-lg font-semibold mb-4 flex items-center space-x-2">
                     <DollarSign className="h-5 w-5 text-[#ff9ec6]" />
                     <span>Price Range (per hour)</span>
                   </label>
