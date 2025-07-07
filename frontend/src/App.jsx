@@ -6,7 +6,7 @@ import SignupPage from "./components/auth/signup";
 import MentorDashboard from './components/app/dashboard/MentorDashboard';
 import MenteeDashboard from './components/app/dashboard/MenteeDashboard';
 import PrivateRoute from "./components/auth/PrivateRoute";
-import VerifyOTPPage from "./components/auth/OTPVarify";
+import VerifyOTPPage from "./components/auth/OtpVerify";
 
 function App() {
   return (
