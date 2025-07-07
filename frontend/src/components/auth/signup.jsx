@@ -6,6 +6,8 @@ import { ArrowLeft, Eye, EyeOff, Users, GraduationCap, Check, Star, Zap, Shield,
 import { motion, AnimatePresence } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
+import Beams from "../ui/Beams/Beams"
+import Particles from "../ui/Particles/Particles"
 
 
 
@@ -61,14 +63,10 @@ export default function SignupPage() {
 
       const res = await axios.post("http://localhost:3000/user/signup", payload)
       localStorage.setItem("token", res.data.token)
+      if(res)
+      navigate(`/verify-otp?email=${formData.email}&role=${selectedRole}`)
 
-      if (res.data.role === "mentee") {
-        navigate("/dashboard/mentee")
-      } else if (res.data.role === "mentor") {
-        navigate("/dashboard/mentor")
-      } else {
-        alert("Unknown user role")
-      }
+      
     } catch (err) {
       console.error("Signup failed:", err.response?.data || err.message)
       alert(err.response?.data?.message || "Signup failed")
@@ -95,6 +93,7 @@ export default function SignupPage() {
     <div className={`min-h-screen ${bgClass} ${textClass} relative overflow-hidden transition-colors duration-300`}>
       {/* Enhanced Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
+     
         <div
           className={`absolute top-0 -left-4 w-96 h-96 bg-[#ff9ec6] rounded-full mix-blend-multiply filter blur-3xl ${isDarkMode ? "opacity-5" : "opacity-10"} animate-blob`}
         ></div>
@@ -126,8 +125,10 @@ export default function SignupPage() {
         </div>
       </header>
 
+
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
+           
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
