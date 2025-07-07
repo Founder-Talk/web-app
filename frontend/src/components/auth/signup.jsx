@@ -6,8 +6,7 @@ import { ArrowLeft, Eye, EyeOff, Users, GraduationCap, Check, Star, Zap, Shield,
 import { motion, AnimatePresence } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
-import Beams from "../ui/Beams/Beams"
-import Particles from "../ui/Particles/Particles"
+
 
 
 
