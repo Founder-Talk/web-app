@@ -18,7 +18,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 // Public routes
 router.post("/signup", userSignup);
 router.post("/signin", userSignin);
-router.post("/logout", logout);
+router.get("/logout", logout);
 
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerificationEmail);

@@ -2,7 +2,7 @@ const Session = require("../models/session.model");
 const User = require("../models/user.model");
 const { z } = require("zod");
 
-// Create a new session request
+// Create a new 1-on-1 session request (mentee-initiated)
 const createSession = async (req, res) => {
     try {
         const schema = z.object({
@@ -36,7 +36,7 @@ const createSession = async (req, res) => {
         const mentee = await User.findById(req.user.id);
         if (!mentee || mentee.role !== "mentee") {
             return res.status(403).json({
-                message: "Only mentees can create session requests"
+                message: "Only mentees can create 1-on-1 session requests"
             });
         }
 
@@ -57,6 +57,12 @@ const createSession = async (req, res) => {
         const session = await Session.create({
             mentor: mentorId,
             mentee: req.user.id,
+            sessionMode: "one-on-one",
+            maxParticipants: 1,
+            participants: [{
+                mentee: req.user.id,
+                status: "joined"
+            }],
             title,
             description,
             scheduledDate: sessionDate,
@@ -67,10 +73,150 @@ const createSession = async (req, res) => {
 
         const populatedSession = await Session.findById(session._id)
             .populate('mentor', 'name email profilePic')
-            .populate('mentee', 'name email profilePic');
+            .populate('mentee', 'name email profilePic')
+            .populate('participants.mentee', 'name email profilePic');
 
         res.status(201).json({
-            message: "Session request created successfully",
+            message: "1-on-1 session request created successfully",
+            session: populatedSession
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+};
+
+// Create a new group session (mentor-initiated)
+const createGroupSession = async (req, res) => {
+    try {
+        const schema = z.object({
+            title: z.string().min(1, "Title is required"),
+            description: z.string().optional(),
+            scheduledDate: z.string().datetime(),
+            duration: z.number().min(15).max(480),
+            sessionType: z.enum(["chat", "video", "async"]).default("chat"),
+            maxParticipants: z.number().min(2).max(50).default(10),
+            amount: z.number().min(0).optional()
+        }).strict();
+
+        const { success, data, error } = schema.safeParse(req.body);
+        if (error || !success) {
+            return res.status(400).json({
+                message: "Invalid data provided",
+                error: error?.errors
+            });
+        }
+
+        const { title, description, scheduledDate, duration, sessionType, maxParticipants, amount } = data;
+
+        // Check if user is a mentor
+        const mentor = await User.findById(req.user.id);
+        if (!mentor || mentor.role !== "mentor") {
+            return res.status(403).json({
+                message: "Only mentors can create group sessions"
+            });
+        }
+
+        // Check if the scheduled date is in the future
+        const sessionDate = new Date(scheduledDate);
+        if (sessionDate <= new Date()) {
+            return res.status(400).json({
+                message: "Session must be scheduled for a future date"
+            });
+        }
+
+        const session = await Session.create({
+            mentor: req.user.id,
+            sessionMode: "group",
+            maxParticipants,
+            participants: [],
+            title,
+            description,
+            scheduledDate: sessionDate,
+            duration,
+            sessionType,
+            amount: amount || 0,
+            status: "open" // Group sessions start as open for enrollment
+        });
+
+        const populatedSession = await Session.findById(session._id)
+            .populate('mentor', 'name email profilePic')
+            .populate('participants.mentee', 'name email profilePic');
+
+        res.status(201).json({
+            message: "Group session created successfully",
+            session: populatedSession
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+};
+
+// Join a group session (mentee-initiated)
+const joinGroupSession = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        
+        // Check if user is a mentee
+        const mentee = await User.findById(req.user.id);
+        if (!mentee || mentee.role !== "mentee") {
+            return res.status(403).json({
+                message: "Only mentees can join group sessions"
+            });
+        }
+
+        const session = await Session.findOne({
+            _id: sessionId,
+            sessionMode: "group",
+            status: "open"
+        });
+
+        if (!session) {
+            return res.status(404).json({
+                message: "Group session not found or not open for enrollment"
+            });
+        }
+
+        // Check if session is full
+        if (session.participants.length >= session.maxParticipants) {
+            return res.status(400).json({
+                message: "Group session is full"
+            });
+        }
+
+        // Check if mentee is already joined
+        const alreadyJoined = session.participants.some(
+            p => p.mentee.toString() === req.user.id
+        );
+        
+        if (alreadyJoined) {
+            return res.status(400).json({
+                message: "You are already enrolled in this session"
+            });
+        }
+
+        // Add mentee to participants
+        session.participants.push({
+            mentee: req.user.id,
+            status: "joined"
+        });
+
+        // Update status to full if needed
+        if (session.participants.length >= session.maxParticipants) {
+            session.status = "full";
+        }
+
+        await session.save();
+
+        const populatedSession = await Session.findById(session._id)
+            .populate('mentor', 'name email profilePic')
+            .populate('participants.mentee', 'name email profilePic');
+
+        res.status(200).json({
+            message: "Successfully joined group session",
             session: populatedSession
         });
     } catch (err) {
@@ -83,7 +229,7 @@ const createSession = async (req, res) => {
 // Get sessions for a user (mentor or mentee)
 const getUserSessions = async (req, res) => {
     try {
-        const { status, page = 1, limit = 10 } = req.query;
+        const { status, page = 1, limit = 10, sessionMode } = req.query;
         const user = await User.findById(req.user.id);
 
         if (!user) {
@@ -93,14 +239,24 @@ const getUserSessions = async (req, res) => {
         }
 
         const query = {};
+        
+        // Build query based on user role
         if (user.role === "mentor") {
             query.mentor = req.user.id;
         } else {
-            query.mentee = req.user.id;
+            // For mentees, check both 1-on-1 sessions and group sessions they've joined
+            query.$or = [
+                { mentee: req.user.id }, // 1-on-1 sessions
+                { "participants.mentee": req.user.id } // Group sessions they've joined
+            ];
         }
 
         if (status) {
             query.status = status;
+        }
+
+        if (sessionMode) {
+            query.sessionMode = sessionMode;
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -108,6 +264,7 @@ const getUserSessions = async (req, res) => {
         const sessions = await Session.find(query)
             .populate('mentor', 'name email profilePic')
             .populate('mentee', 'name email profilePic')
+            .populate('participants.mentee', 'name email profilePic')
             .skip(skip)
             .limit(parseInt(limit))
             .sort({ scheduledDate: -1 });
@@ -416,6 +573,8 @@ const addSessionFeedback = async (req, res) => {
 
 module.exports = {
     createSession,
+    createGroupSession,
+    joinGroupSession,
     getUserSessions,
     acceptSession,
     rejectSession,
