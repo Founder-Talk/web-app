@@ -26,7 +26,7 @@ export default function VerifyOTPPage() {
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      const timer = setTimeout(() => setCountdown(countdown - 6), 1000)
       return () => clearTimeout(timer)
     } else {
       setCanResend(true)
@@ -64,51 +64,51 @@ export default function VerifyOTPPage() {
     }
   }
 
-  const handleVerify = async () => {
-    const code = otp.join("")
-    if (code.length !== 6) {
-      setStatus("error")
-      setErrorMessage("Please enter the complete 6-digit code.")
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const res = await axios.post("http://localhost:3000/api/user/verify-otp", {
-        email,
-        otp: code,
-        role,
-      })
-      if (res.status === 200) {
-        setStatus("success")
-        setTimeout(() => {
-          navigate(role === "mentor" ? "/dashboard/mentor" : "/dashboard/mentee")
-        }, 2000)
-      }
-    } catch (err) {
-      setStatus("error")
-      setErrorMessage(err.response?.data?.message || "Invalid OTP. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
+ const handleVerify = async () => {
+  const code = otp.join("");
+  if (code.length !== 6) {
+    setStatus("error");
+    setErrorMessage("Please enter the complete 6-digit code.");
+    return;
   }
 
-  const handleResend = async () => {
-    setIsResending(true)
-    setCanResend(false)
-    setCountdown(60)
-    setOtp(["", "", "", "", "", ""])
-    try {
-      await axios.post("http://localhost:3000/api/user/resend-otp", {
-        email,
-        role,
-      })
-    } catch (err) {
-      console.error("Resend OTP error:", err)
-    } finally {
-      setIsResending(false)
+  setIsLoading(true);
+  try {
+    const res = await axios.post("http://localhost:3000/user/verify-email", {
+      email,
+      otp: code
+    });
+
+    if (res.status === 200) {
+      setStatus("success");
+      setTimeout(() => {
+        navigate(role === "mentor" ? "/dashboard/mentor" : "/dashboard/mentee");
+      }, 2000);
     }
+  } catch (err) {
+    setStatus("error");
+    setErrorMessage(err.response?.data?.message || "Invalid OTP. Please try again.");
+  } finally {
+    setIsLoading(false);
   }
+};
+
+const handleResend = async () => {
+  setIsResending(true);
+  setCanResend(false);
+  setCountdown(60);
+  setOtp(["", "", "", "", "", ""]);
+  try {
+    await axios.post("http://localhost:3000/user/resend-verification", {
+      email
+    });
+  } catch (err) {
+    console.error("Resend OTP error:", err);
+  } finally {
+    setIsResending(false);
+  }
+};
+
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
 
