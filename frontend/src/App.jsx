@@ -7,7 +7,7 @@ import MentorDashboard from './components/app/dashboard/MentorDashboard';
 import MenteeDashboard from './components/app/dashboard/MenteeDashboard';
 import PrivateRoute from "./components/auth/PrivateRoute";
 import VerifyOTPPage from "./components/auth/OtpVerify";
-
+import Chat from './components/Chat/page'
 function App() {
   return (
     <Routes>
@@ -15,7 +15,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/verify-otp" element={<VerifyOTPPage/>} />
-
+      <Route path="/chat" element={<Chat/>} />
       <Route path="/dashboard/mentor"
         element={
           <PrivateRoute>
