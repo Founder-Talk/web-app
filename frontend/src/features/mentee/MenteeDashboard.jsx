@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Users, MessageCircle, Search } from "lucide-react";
 import Nav from "@/components/common/nav/nav";
+import MentorCard from "./mentorCard";
 
 
 const mentors = [
@@ -161,7 +162,40 @@ function MenteeDashboard({ user = useSelector((state) => state.user.user) }) {
 
         {/* Section Content */}
         <div className="mt-6">
-          {/* {} */}
+          {selectedTab === "mentor" ? (
+            <>
+              {/* Search Bar */}
+              <div className="flex items-center gap-2 mb-6">
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search by name or field..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={`w-full pl-10 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9ec6] ${
+                      isDarkMode
+                        ? "bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
+                        : "bg-white border-gray-300 text-black placeholder:text-gray-500"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Mentor Cards */}
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filteredMentors.length > 0 ? (
+                  filteredMentors.map((mentor) => (
+                    <MentorCard key={mentor.id} mentor={mentor} />
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No mentors found.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="text-gray-400">hello</div>
+          )}
         </div>
       </div>
     </div>

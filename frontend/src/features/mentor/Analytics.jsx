@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion"
 import { DollarSign, CheckCircle, Star, ArrowUpRight } from "lucide-react"
+import { useSelector } from "react-redux";
 
 
-export default function Analytics({ isDarkMode,  }) {
+export default function Analytics({ isDarkMode = useSelector((state) => state.theme.mode === "light")}) {
 
 const analyticsData = [
   {
@@ -50,7 +51,7 @@ const analyticsData = [
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sticky top-0 ">
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-2 flex items-center space-x-2">
           <div className={`p-2 rounded-lg ${isDarkMode ? "bg-gray-800/50" : "bg-gray-100/50"}`}>

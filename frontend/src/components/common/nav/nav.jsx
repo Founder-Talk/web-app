@@ -178,7 +178,7 @@ function Nav() {
                     </Link>
                   </div>
 
-                  {user ? (
+                  {user ? (<div>
                     <Button
                       onClick={() => {
                         navigate("/profile");
@@ -191,6 +191,19 @@ function Nav() {
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </Button>
+                    <Button
+                      onClick={() => {
+                        navigate("/profile");
+                        setShowMobileMenu(false);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 p-0 border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10"
+                      >
+                     
+                      <LogOut/>
+                    </Button>
+                      </div>
                   ) : (
                     <Button
                       onClick={() => navigate("/login")}

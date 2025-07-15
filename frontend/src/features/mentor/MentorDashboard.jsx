@@ -7,38 +7,21 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
 import MentorProfile from "./MentorProfile"
 import CommunityFeed from "../community/CommunityFeed"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { clearUser } from "@/redux/slice/userslice"
 import Nav from "@/components/common/nav/nav"
 import Analytics from "./Analytics"
 
 export default function MentorDashboard() {
-  const [isDarkMode, setIsDarkMode] = useState(true)
+ const isDarkMode = useSelector((state) => state.theme.mode === "light");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
   const [showProfileCompletionModal, setShowProfileCompletionModal] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [activeTab, setActiveTab] = useState("community")
   const dispatch=useDispatch()
 
-  const [profileData, setProfileData] = useState({
-    name: "Sarah Chen",
-    email: "sarah.chen@example.com",
-    bio: "I'm a seasoned entrepreneur with over 10 years of experience in building and scaling startups. I've successfully founded 3 companies, with my latest venture being acquired by a Fortune 500 company for ₹50 crores.",
-    company: "TechFlow Solutions",
-    position: "CEO & Founder",
-    expertise: ["Product Development", "Fundraising", "Team Building"],
-    hourlyRate: "150",
-    experience: "10+ years",
-    languages: ["English", "Mandarin"],
-    backgroundImage: null,
-    profilePicture: null,
-    achievements: "",
-    availability: "Available weekdays 9 AM - 6 PM PST. Weekend sessions by appointment.",
-    responseTime: "Within 2 hours",
-    linkedin: "",
-    twitter: "",
-    website: "",
-  })
+  const profileData =useSelector((state) => state.user.user);
+
 
   // Mock mentor analytics data
   const mentorStats = {
@@ -290,7 +273,7 @@ export default function MentorDashboard() {
               activeTab === "analytics" ? "block" : "hidden lg:block"
             } space-y-6`}
           >
-           <Analytics isDarkMode={isDarkMode}/>
+           <Analytics />
 
             {/* Quick Actions */}
             
@@ -306,7 +289,7 @@ export default function MentorDashboard() {
         showModal={showProfileCompletionModal}
         setShowModal={setShowProfileCompletionModal}
         profileData={profileData}
-        setProfileData={setProfileData}
+        
         isDarkMode={isDarkMode}
         mutedTextClass={mutedTextClass}
         onProfileComplete={handleProfileComplete}

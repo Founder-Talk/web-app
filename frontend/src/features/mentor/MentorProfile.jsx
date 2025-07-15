@@ -24,7 +24,6 @@ export default function MentorProfile({
   showModal,
   setShowModal,
   profileData,
-  setProfileData,
   isDarkMode,
   mutedTextClass,
   onProfileComplete,
