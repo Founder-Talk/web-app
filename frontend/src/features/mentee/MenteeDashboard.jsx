@@ -89,7 +89,7 @@ const mentors = [
 ];
 
 function MenteeDashboard({ user = useSelector((state) => state.user.user) }) {
-  const isDarkMode = useSelector((state) => state.theme.mode === "dark");
+  const isDarkMode = useSelector((state) => state.theme.mode === "light");
   const [selectedTab, setSelectedTab] = useState("mentor");
   const [search, setSearch] = useState("");
 

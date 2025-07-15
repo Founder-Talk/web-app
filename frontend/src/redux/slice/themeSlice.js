@@ -5,7 +5,7 @@ const stored = localStorage.getItem('theme');        // "light" | "dark" | null
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 const initialState = {
-  mode: stored || (!prefersDark ? 'dark' : 'light'),  // default
+  mode: stored || (prefersDark ? 'dark' : 'light'),  // default
 };
 
 const themeSlice = createSlice({

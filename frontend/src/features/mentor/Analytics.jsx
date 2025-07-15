@@ -3,39 +3,42 @@
 import { motion } from "framer-motion"
 import { DollarSign, CheckCircle, Star, ArrowUpRight } from "lucide-react"
 
-export default function Analytics({ stats, isDarkMode, mutedTextClass }) {
-  const analyticsData = [
-    {
-      id: "earnings",
-      title: "Total Earnings",
-      value: `₹${stats.totalEarnings.toLocaleString()}`,
-      subtitle: `₹${stats.monthlyEarnings.toLocaleString()} this month`,
-      icon: DollarSign,
-      color: "green",
-      growth: `+${stats.earningsGrowth}%`,
-      bgColor: isDarkMode ? "bg-green-900/20" : "bg-green-100/50",
-    },
-    {
-      id: "sessions",
-      title: "Sessions Completed",
-      value: stats.completedSessions.toString(),
-      subtitle: `${stats.thisMonthSessions} this month`,
-      icon: CheckCircle,
-      color: "blue",
-      growth: `${stats.thisMonthSessions}/${stats.lastMonthSessions}`,
-      bgColor: isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50",
-    },
-    {
-      id: "rating",
-      title: "Average Rating",
-      value: stats.rating.toString(),
-      subtitle: `${stats.totalReviews} reviews`,
-      icon: Star,
-      color: "yellow",
-      growth: `${stats.responseRate}%`,
-      bgColor: isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50",
-    },
-  ]
+
+export default function Analytics({ isDarkMode,  }) {
+
+const analyticsData = [
+  {
+    id: "earnings",
+    title: "Total Earnings",
+    value: "₹1,20,000",
+    subtitle: "₹15,000 this month",
+    icon: DollarSign,
+    color: "green",
+    growth: "10%",
+    bgColor: "bg-green-100/50", // or "bg-green-900/20" for dark
+  },
+  {
+    id: "sessions",
+    title: "Sessions Completed",
+    value: "25",
+    subtitle: "5 this month",
+    icon: CheckCircle,
+    color: "blue",
+    growth: "5/10",
+    bgColor: "bg-blue-100/50",
+  },
+  {
+    id: "rating",
+    title: "Average Rating",
+    value: "4.8",
+    subtitle: "40 reviews",
+    icon: Star,
+    color: "yellow",
+    growth: "90%",
+    bgColor: "bg-yellow-100/50",
+  },
+];
+
 
   const getColorClasses = (color) => {
     const colors = {
@@ -55,7 +58,7 @@ export default function Analytics({ stats, isDarkMode, mutedTextClass }) {
           </div>
           <span>Analytics Overview</span>
         </h2>
-        <p className={`${mutedTextClass} text-sm`}>Your mentoring performance at a glance</p>
+        <p className={` text-sm`}>Your mentoring performance at a glance</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -81,9 +84,9 @@ export default function Analytics({ stats, isDarkMode, mutedTextClass }) {
                 </div>
               </div>
               <div>
-                <p className={`text-xs ${mutedTextClass} mb-1`}>{item.title}</p>
+                <p className={`text-xs  mb-1`}>{item.title}</p>
                 <p className="text-xl font-bold mb-1">{item.value}</p>
-                <p className={`text-xs ${mutedTextClass}`}>{item.subtitle}</p>
+                <p className={`text-xs `}>{item.subtitle}</p>
               </div>
             </motion.div>
           )
