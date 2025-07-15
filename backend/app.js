@@ -22,12 +22,14 @@ const userRoute = require("./routes/user.routes");
 const sessionRoute = require("./routes/session.routes");
 const messageRoute = require("./routes/message.routes");
 const adminRoute = require("./routes/admin.routes");
+const postRoute = require("./routes/post.routes");
 
 // Use routes
 app.use("/user", userRoute);
 app.use("/session", sessionRoute);
 app.use("/message", messageRoute);
 app.use("/admin", adminRoute);
+app.use("/post", postRoute);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Mentorship Platform API");
