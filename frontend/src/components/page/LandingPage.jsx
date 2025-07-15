@@ -1,65 +1,71 @@
-import { useState } from "react"
+import { useSelector, useDispatch } from "react-redux"
+import { toggleTheme } from "../../redux/slice/themeSlice"
 import { Button } from "@/components/ui/button"
 import { Menu, X, ArrowRight, Moon, Sun } from "lucide-react"
 import { motion, useScroll, useTransform } from "framer-motion"
+import { useState, useEffect } from "react"
 import { FiEdit3, FiUsers, FiCalendar, FiTarget, FiZap, FiTrendingUp, FiGlobe } from "react-icons/fi"
 import { BsRocket } from "react-icons/bs"
+import Nav from "../common/nav/nav"
+import Foot from "../common/foot/foot"
+import { useNavigate } from "react-router-dom"
 
 export default function FoundertalkLanding() {
+  const dispatch = useDispatch()
+  const isDarkMode = useSelector((state) => state.theme.mode === "light")
+  const navigate=useNavigate()
+  const user = useSelector((state) => state.user.user);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDarkMode)
+  }, [isDarkMode])
+    useEffect(() => {
+  if (user) {
+    if (user.role === "mentee") {
+      navigate("/dashboard/mentee");
+    } else if (user.role === "mentor") {
+      navigate("/dashboard/mentor");
+    }
+  }
+}, [user, navigate]);
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true)
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
 
-  // Theme toggle function
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
-
-  // Smooth scroll function
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      })
+      element.scrollIntoView({ behavior: "smooth", block: "start" })
     }
     setIsMenuOpen(false)
   }
 
-  // Animated text component
-  const AnimatedText = ({ text, className = "" }) => {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className={className}
-      >
-        {text.split("").map((char, index) => (
-          <motion.span
-            key={index}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.05, delay: index * 0.02 }}
-          >
-            {char}
-          </motion.span>
-        ))}
-      </motion.div>
-    )
-  }
+  const AnimatedText = ({ text, className = "" }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className={className}
+    >
+      {text.split("").map((char, index) => (
+        <motion.span
+          key={index}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.05, delay: index * 0.02 }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </motion.div>
+  )
 
-  // Scroll velocity component for logos
   const ScrollingLogos = () => {
     const logos = ["Stripe", "Notion", "Airbnb", "Uber", "Spotify", "Discord", "Figma", "Slack"]
-
     return (
       <div className="overflow-hidden">
         <motion.div
           animate={{ x: [0, -1000] }}
-          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           className="flex space-x-12 whitespace-nowrap"
         >
           {[...logos, ...logos].map((logo, index) => (
@@ -83,7 +89,7 @@ export default function FoundertalkLanding() {
 
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} relative beams-bg overflow-hidden transition-colors duration-300`}>
-      {/* Enhanced Background Elements */}
+      {/* Background and grid effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute top-0 -left-4 w-96 h-96 bg-[#ff9ec6] rounded-full mix-blend-multiply filter blur-3xl ${isDarkMode ? "opacity-5" : "opacity-10"} animate-blob`}
@@ -94,99 +100,16 @@ export default function FoundertalkLanding() {
         <div
           className={`absolute -bottom-8 left-20 w-96 h-96 bg-[#ff9ec6] rounded-full mix-blend-multiply filter blur-3xl ${isDarkMode ? "opacity-5" : "opacity-10"} animate-blob animation-delay-4000`}
         ></div>
-
-        {/* Subtle Grid Pattern */}
-        <div
-          className={`absolute inset-0 bg-[linear-gradient(rgba(255,158,198,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,158,198,0.02)_1px,transparent_1px)] bg-[size:60px_60px]`}
-        ></div>
-
-        {/* Radial Gradient Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,158,198,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,158,198,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
         <div
           className={`absolute inset-0 ${isDarkMode ? "bg-gradient-radial from-transparent via-black/50 to-black" : "bg-gradient-radial from-transparent via-white/50 to-white"}`}
         ></div>
       </div>
 
       {/* Header */}
-      <header 
-        className={`fixed top-0 z-50 w-full  shadow-lg shadow-white/5 backdrop-blur-sm ${isDarkMode ? "bg-black/10 border-gray-900/50" : "bg-white/80 border-gray-200/50"} border-b`}
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-2xl font-bold text-[#ff9ec6] hover:text-[#ff9ec6]/80 transition-colors"
-            >
-              Foundertalk
-            </button>
+      <Nav />
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-full ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-5 w-5 text-gray-400 hover:text-white" />
-                ) : (
-                  <Moon className="h-5 w-5 text-gray-600 hover:text-gray-900" />
-                )}
-              </button>
-
-              {/* Divider */}
-              <div className={`h-6 w-px ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
-
-              {/* Get Started Button */}
-              <Button
-                onClick={() => (window.location.href = "/login")}
-                className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full px-6 font-semibold"
-              >
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <button className={`md:hidden ${textClass}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`md:hidden mt-4 py-4 backdrop-blur-xl ${isDarkMode ? "bg-gray-900/80 border-gray-800/50" : "bg-white/80 border-gray-200/50"} rounded-2xl border`}
-            >
-              <div className="flex flex-col space-y-4 px-6">
-                <div className="flex items-center justify-between">
-                  <span className={`text-sm ${mutedTextClass}`}>Theme</span>
-                  <button
-                    onClick={toggleTheme}
-                    className={`p-2 rounded-full ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                  >
-                    {isDarkMode ? (
-                      <Sun className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <Moon className="h-5 w-5 text-gray-600" />
-                    )}
-                  </button>
-                </div>
-                <Button
-                  onClick={() => (window.location.href = "/login")}
-                  className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full font-semibold"
-                >
-                  Get Started
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </header>
-
-      {/* Hero Section */}
+     {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <motion.div
           style={{ y }}
@@ -537,22 +460,8 @@ export default function FoundertalkLanding() {
       </section>
 
       {/* Footer */}
-      <footer className={`py-12 border-t ${isDarkMode ? "border-gray-900/50" : "border-gray-200/50"} relative`}>
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-2xl font-bold text-[#ff9ec6] mb-4 md:mb-0 hover:text-[#ff9ec6]/80 transition-colors"
-            >
-              Foundertalk
-            </button>
-
-            <div className={`text-center md:text-right ${mutedTextClass} text-sm`}>
-              <p>© {new Date().getFullYear()} Foundertalk. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+     <Foot/>
+   
     </div>
   )
 }

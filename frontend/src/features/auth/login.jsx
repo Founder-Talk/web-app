@@ -1,11 +1,13 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 import axios from "axios"
 import { useNavigate } from "react-router-dom" 
-
+import { useDispatch, useSelector } from "react-redux"
+import { fetchCurrentUser, setToken } from "@/redux/slice/userslice"
+import { useEffect } from "react";
 export default function LoginPage() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
@@ -14,10 +16,12 @@ export default function LoginPage() {
     email: "",
     password: "",
   })
+  const dispatch=useDispatch()
   const navigate = useNavigate()
   const bgClass = isDarkMode ? "bg-black" : "bg-white"
   const textClass = isDarkMode ? "text-white" : "text-gray-900"
   const mutedTextClass = isDarkMode ? "text-gray-400" : "text-gray-600"
+  const user = useSelector((state) => state.user.user);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -25,37 +29,57 @@ export default function LoginPage() {
       [e.target.name]: e.target.value,
     })
   }
-
-
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const res = await axios.post("http://localhost:3000/user/signin", {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      localStorage.setItem("token", res.data.token);
-      console.log("Token received:", res.data.token);
-
-      if (res.data.role === "mentee") {
-        navigate("/dashboard/mentee");
-      } else if (res.data.role === "mentor") {
-        navigate("/dashboard/mentor");
-      } else {
-        alert("Unknown user role");
-      }
-
-    } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
-      console.log(err);
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+  if (user) {
+    if (user.role === "mentee") {
+      navigate("/dashboard/mentee");
+    } else if (user.role === "mentor") {
+      navigate("/dashboard/mentor");
     }
-  };
+  }
+}, [user, navigate]);
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    const res = await axios.post("http://localhost:3000/user/signin", {
+      email: formData.email,
+      password: formData.password,
+    });
+
+    const token = res.data.token;
+    const role = res.data.role;
+
+    if (!token || !role) {
+      throw new Error("Invalid login response: missing token or role");
+    }
+
+    // ✅ Save only token
+    dispatch(setToken(token));
+
+    // ✅ Fetch user from token and save to Redux
+    await dispatch(fetchCurrentUser());
+
+    // ✅ Redirect by role
+    if (role === "mentee") {
+      navigate("/dashboard/mentee");
+    } else if (role === "mentor") {
+      navigate("/dashboard/mentor");
+    } else {
+      alert("Unknown user role");
+    }
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
+    console.error("Login error:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
 
 
