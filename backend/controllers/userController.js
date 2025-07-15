@@ -5,6 +5,7 @@ const { z } = require("zod");
 const generateToken = require("../utils/generateToken");
 const { sendVerificationEmail } = require("../utils/emailService");
 const saltRounds = 10;
+const { uploadOnCloudinary } = require('../utils/cloudinary');
 
 /* Signup and Signin Controllers */
 const userSignup = async (req, res) => {
@@ -184,6 +185,11 @@ const getUserProfile = async (req, res) => {
 // Update user profile
 const updateUserProfile = async (req, res) => {
     try {
+        let profilePicUrl = undefined;
+        if (req.file) {
+            const cloudinaryResult = await uploadOnCloudinary(req.file.path);
+            profilePicUrl = cloudinaryResult?.secure_url;
+        }
         const schema = z.object({
             name: z.string().optional(),
             bio: z.string().max(500).optional(),
@@ -212,7 +218,9 @@ const updateUserProfile = async (req, res) => {
                 message: "Invalid data provided"
             });
         }
-
+        if (profilePicUrl) {
+            data.profilePic = profilePicUrl;
+        }
         const user = await User.findByIdAndUpdate(
             req.user.id,
             { $set: data },
@@ -385,6 +393,7 @@ const verifyEmail = async (req, res) => {
 const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
+        console.log("Resending verification email for:", req.body);
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
