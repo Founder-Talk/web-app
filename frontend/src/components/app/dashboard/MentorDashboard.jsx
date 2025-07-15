@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +15,6 @@ import {
   MessageCircle,
   X,
   ImageIcon,
-  Send,
   Upload,
   Star,
   Briefcase,
@@ -26,22 +27,24 @@ import {
   CheckCircle,
   BookOpen,
   ArrowUpRight,
-  Bell,
   Menu,
+  Send,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
+import ScrollToTop from "@/components/common/scrollup"
+
 export default function MentorDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false)
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [showCommentModal, setShowCommentModal] = useState(false)
-  const [showProfileCompletionModal, setShowProfileCompletionModal] = useState(true)
+  const [showProfileCompletionModal, setShowProfileCompletionModal] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
   const [newComment, setNewComment] = useState("")
   const [profileCompletionStep, setProfileCompletionStep] = useState(1)
+  const [activeTab, setActiveTab] = useState("analytics") // New state for mobile tab
 
   const [profileData, setProfileData] = useState({
     name: "Sarah Chen",
@@ -80,55 +83,6 @@ export default function MentorDashboard() {
     earningsGrowth: 15.2,
     newMentees: 12,
   }
-
-  // Mock notifications
-  const notifications = [
-    {
-      id: 1,
-      type: "session_request",
-      title: "New Session Request",
-      message: "Alex Johnson wants to book a session for Product Strategy",
-      time: "5 minutes ago",
-      unread: true,
-      avatar: "/placeholder.svg?height=32&width=32&text=AJ",
-    },
-    {
-      id: 2,
-      type: "review",
-      title: "New Review Received",
-      message: "Maria Garcia left you a 5-star review",
-      time: "1 hour ago",
-      unread: true,
-      avatar: "/placeholder.svg?height=32&width=32&text=MG",
-    },
-    {
-      id: 3,
-      type: "session_reminder",
-      title: "Session Reminder",
-      message: "You have a session with David Kim in 30 minutes",
-      time: "2 hours ago",
-      unread: false,
-      avatar: "/placeholder.svg?height=32&width=32&text=DK",
-    },
-    {
-      id: 4,
-      type: "payment",
-      title: "Payment Received",
-      message: "₹2,500 payment received for completed session",
-      time: "1 day ago",
-      unread: false,
-    },
-    {
-      id: 5,
-      type: "milestone",
-      title: "Milestone Achieved",
-      message: "Congratulations! You've completed 100+ sessions",
-      time: "2 days ago",
-      unread: false,
-    },
-  ]
-
-  const unreadNotifications = notifications.filter((n) => n.unread).length
 
   // Mock upcoming sessions
   const upcomingSessions = [
@@ -236,6 +190,74 @@ export default function MentorDashboard() {
       timestamp: "1 day ago",
       liked: false,
     },
+    {
+      id: 3,
+      author: {
+        name: "Jennifer Park",
+        avatar: "/placeholder.svg?height=40&width=40&text=JP",
+        role: "Mentor",
+        field: "SaaS",
+      },
+      content:
+        "Building a SaaS product? Here's my framework for pricing:\n\n1. Start with value-based pricing\n2. Offer 3 tiers (Good, Better, Best)\n3. Make the middle tier most attractive\n4. Include annual discounts\n5. Test and iterate based on data\n\nRemember: You can always lower prices, but raising them is much harder!",
+      likes: 67,
+      comments: [
+        {
+          id: 1,
+          author: "Mike Chen",
+          avatar: "/placeholder.svg?height=30&width=30&text=MC",
+          content: "Great framework! We implemented this and saw 40% increase in conversions.",
+          timestamp: "3 hours ago",
+        },
+        {
+          id: 2,
+          author: "Sarah Kim",
+          avatar: "/placeholder.svg?height=30&width=30&text=SK",
+          content: "The annual discount tip is gold. Thanks for sharing!",
+          timestamp: "5 hours ago",
+        },
+      ],
+      timestamp: "1 day ago",
+      liked: true,
+    },
+    {
+      id: 4,
+      author: {
+        name: "David Thompson",
+        avatar: "/placeholder.svg?height=40&width=40&text=DT",
+        role: "Mentor",
+        field: "Fintech",
+      },
+      content:
+        "Regulatory compliance in fintech doesn't have to be scary. Here's how we approached it:\n\n• Start compliance discussions early\n• Build relationships with regulators\n• Invest in legal counsel from day one\n• Document everything\n• Stay updated on regulatory changes\n\nCompliance is not a blocker - it's a competitive advantage when done right.",
+      likes: 38,
+      comments: [],
+      timestamp: "2 days ago",
+      liked: false,
+    },
+    {
+      id: 5,
+      author: {
+        name: "Lisa Wang",
+        avatar: "/placeholder.svg?height=40&width=40&text=LW",
+        role: "Mentor",
+        field: "AI/ML",
+      },
+      content:
+        "AI implementation doesn't have to be overwhelming. Start small:\n\n1. Identify one specific problem AI can solve\n2. Use existing APIs before building custom models\n3. Focus on data quality over quantity\n4. Measure impact from day one\n5. Scale gradually\n\nMost successful AI projects start with simple automation, not complex algorithms.",
+      likes: 89,
+      comments: [
+        {
+          id: 1,
+          author: "Tom Wilson",
+          avatar: "/placeholder.svg?height=30&width=30&text=TW",
+          content: "This is exactly what we needed to hear. Starting with APIs next week!",
+          timestamp: "2 hours ago",
+        },
+      ],
+      timestamp: "3 days ago",
+      liked: false,
+    },
   ])
 
   const bgClass = isDarkMode ? "bg-black" : "bg-white"
@@ -246,7 +268,7 @@ export default function MentorDashboard() {
     setIsDarkMode(!isDarkMode)
   }
 
-  // Options for dropdowns (removed location, education, session types)
+  // Options for dropdowns
   const expertiseOptions = [
     "Product Development",
     "Fundraising",
@@ -392,30 +414,13 @@ export default function MentorDashboard() {
     return (profileCompletionStep / 3) * 100
   }
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "session_request":
-        return <Calendar className="h-4 w-4 text-blue-500" />
-      case "review":
-        return <Star className="h-4 w-4 text-yellow-500" />
-      case "session_reminder":
-        return <Clock className="h-4 w-4 text-orange-500" />
-      case "payment":
-        return <DollarSign className="h-4 w-4 text-green-500" />
-      case "milestone":
-        return <Award className="h-4 w-4 text-purple-500" />
-      default:
-        return <Bell className="h-4 w-4 text-gray-500" />
-    }
-  }
-
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-300`}>
       {/* Header */}
       <header
         className={`sticky top-0 z-50 backdrop-blur-xl ${isDarkMode ? "bg-black/80 border-gray-900/50" : "bg-white/80 border-gray-200/50"} border-b`}
       >
-        <div className="container mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link
@@ -438,84 +443,6 @@ export default function MentorDashboard() {
                   <Moon className="h-5 w-5 text-gray-600 hover:text-gray-900" />
                 )}
               </button>
-
-              {/* Notifications */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
-                  className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2 relative`}
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#ff9ec6] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                      {unreadNotifications}
-                    </span>
-                  )}
-                </Button>
-
-                <AnimatePresence>
-                  {showNotificationDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`absolute right-0 mt-2 w-80 backdrop-blur-xl ${isDarkMode ? "bg-gray-900/95 border-gray-700/60" : "bg-white/95 border-gray-300/60"} rounded-xl border shadow-xl max-h-96 overflow-y-auto`}
-                    >
-                      <div className="p-4 border-b border-gray-800/20">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold">Notifications</h3>
-                          {unreadNotifications > 0 && (
-                            <span className="text-xs text-[#ff9ec6] font-medium">{unreadNotifications} new</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="py-2">
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`px-4 py-3 ${isDarkMode ? "hover:bg-gray-800/50" : "hover:bg-gray-100/50"} transition-colors cursor-pointer ${
-                              notification.unread ? "bg-[#ff9ec6]/5" : ""
-                            }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <div className="flex-shrink-0 mt-1">
-                                {notification.avatar ? (
-                                  <img
-                                    src={notification.avatar || "/placeholder.svg"}
-                                    alt=""
-                                    className="w-8 h-8 rounded-full border border-[#ff9ec6]/20"
-                                  />
-                                ) : (
-                                  <div className={`p-2 rounded-full ${isDarkMode ? "bg-gray-800" : "bg-gray-100"}`}>
-                                    {getNotificationIcon(notification.type)}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center space-x-2">
-                                  <p className="text-sm font-semibold truncate">{notification.title}</p>
-                                  {notification.unread && (
-                                    <div className="w-2 h-2 bg-[#ff9ec6] rounded-full flex-shrink-0"></div>
-                                  )}
-                                </div>
-                                <p className={`text-xs ${mutedTextClass} mt-1 line-clamp-2`}>{notification.message}</p>
-                                <p className={`text-xs ${mutedTextClass} mt-1`}>{notification.time}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-3 border-t border-gray-800/20">
-                        <Button variant="ghost" size="sm" className="w-full text-[#ff9ec6] hover:bg-[#ff9ec6]/10">
-                          View All Notifications
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
 
               {/* Chat Button */}
               <Link href="/chats">
@@ -612,21 +539,7 @@ export default function MentorDashboard() {
                         )}
                       </button>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
-                        className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2 relative`}
-                      >
-                        <Bell className="h-5 w-5" />
-                        {unreadNotifications > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-[#ff9ec6] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                            {unreadNotifications}
-                          </span>
-                        )}
-                      </Button>
-
-                      <Link href="/chats">
+                      <Link href="/chat">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -657,282 +570,302 @@ export default function MentorDashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-4 md:py-8">
-        {/* Welcome Section */}
-        <div className="mb-6 md:mb-8">
+      {/* Welcome Section */}
+      <div className="max-w-7xl mx-auto px-4 py-6 border-b border-gray-800/20">
+        <div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">Welcome back, {profileData.name}! 👋</h1>
           <p className={`${mutedTextClass} text-base md:text-lg`}>
             Here's your mentoring overview and community activity
           </p>
         </div>
+      </div>
 
-        {/* Mentor Analytics Hero Section */}
-        <div className="mb-6 md:mb-8">
-          {/* Main Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-            {/* Total Earnings */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6`}
-            >
-              <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className={`p-2 md:p-3 rounded-xl ${isDarkMode ? "bg-green-900/20" : "bg-green-100/50"}`}>
-                  <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
-                </div>
-                <div className="flex items-center space-x-1 text-green-500">
-                  <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-sm font-medium">+{mentorStats.earningsGrowth}%</span>
-                </div>
-              </div>
-              <div>
-                <p className={`text-xs md:text-sm ${mutedTextClass} mb-1`}>Total Earnings</p>
-                <p className="text-xl md:text-2xl font-bold">₹{mentorStats.totalEarnings.toLocaleString()}</p>
-                <p className={`text-xs ${mutedTextClass}`}>
-                  ₹{mentorStats.monthlyEarnings.toLocaleString()} this month
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Sessions Completed */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6`}
-            >
-              <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className={`p-2 md:p-3 rounded-xl ${isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50"}`}>
-                  <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />
-                </div>
-                <div className="flex items-center space-x-1 text-blue-500">
-                  <span className="text-xs md:text-sm font-medium">
-                    {mentorStats.thisMonthSessions}/{mentorStats.lastMonthSessions}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className={`text-xs md:text-sm ${mutedTextClass} mb-1`}>Sessions Completed</p>
-                <p className="text-xl md:text-2xl font-bold">{mentorStats.completedSessions}</p>
-                <p className={`text-xs ${mutedTextClass}`}>{mentorStats.thisMonthSessions} this month</p>
-              </div>
-            </motion.div>
-
-            {/* Rating */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6`}
-            >
-              <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className={`p-2 md:p-3 rounded-xl ${isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50"}`}>
-                  <Star className="h-5 w-5 md:h-6 md:w-6 text-yellow-500 fill-current" />
-                </div>
-                <div className="flex items-center space-x-1">
-                  <span className={`text-xs md:text-sm font-medium ${mutedTextClass}`}>
-                    {mentorStats.totalReviews} reviews
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className={`text-xs md:text-sm ${mutedTextClass} mb-1`}>Average Rating</p>
-                <p className="text-xl md:text-2xl font-bold">{mentorStats.rating}</p>
-                <p className={`text-xs ${mutedTextClass}`}>{mentorStats.responseRate}% response rate</p>
-              </div>
-            </motion.div>
-
-            {/* Upcoming Sessions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6`}
-            >
-              <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className={`p-2 md:p-3 rounded-xl ${isDarkMode ? "bg-purple-900/20" : "bg-purple-100/50"}`}>
-                  <Calendar className="h-5 w-5 md:h-6 md:w-6 text-purple-500" />
-                </div>
-                <div className="flex items-center space-x-1 text-purple-500">
-                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                </div>
-              </div>
-              <div>
-                <p className={`text-xs md:text-sm ${mutedTextClass} mb-1`}>Upcoming Sessions</p>
-                <p className="text-xl md:text-2xl font-bold">{mentorStats.upcomingSessions}</p>
-                <p className={`text-xs ${mutedTextClass}`}>{mentorStats.newMentees} new mentees</p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Additional Stats for larger screens */}
+      {/* Main Content - X.com Style Layout */}
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Mobile Tab Navigation */}
+        <div className="lg:hidden flex justify-center space-x-4 py-4">
+          <Button
+            onClick={() => setActiveTab("analytics")}
+            variant="ghost"
+            className={`flex-1 rounded-full ${
+              activeTab === "analytics"
+                ? "bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90"
+                : isDarkMode
+                  ? "hover:bg-gray-800/50"
+                  : "hover:bg-gray-100/50"
+            }`}
+          >
+            Analytics
+          </Button>
+          <Button
+            onClick={() => setActiveTab("community")}
+            variant="ghost"
+            className={`flex-1 rounded-full ${
+              activeTab === "community"
+                ? "bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90"
+                : isDarkMode
+                  ? "hover:bg-gray-800/50"
+                  : "hover:bg-gray-100/50"
+            }`}
+          >
+            Community Feed
+          </Button>
         </div>
 
-        {/* Community Feed - Mandatory Section */}
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <h2 className="text-xl md:text-2xl font-bold mb-2 flex items-center space-x-2">
-              <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-[#ff9ec6]" />
-              <span>Community Feed</span>
-              <span className="px-2 py-1 rounded-full bg-[#ff9ec6]/20 text-[#ff9ec6] text-xs font-medium">
-                Required
-              </span>
-            </h2>
-            <p className={`${mutedTextClass} text-sm md:text-base`}>
-              Share your expertise and engage with the community to build your reputation and attract more mentees.
-            </p>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Right Column - Analytics Cards (X.com Sidebar Style) - Now first in source order for mobile */}
 
-          {/* Create Post Section */}
           <div
-            className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6 mb-6`}
+            className={`lg:col-span-4 xl:col-span-5 lg:order-2 ${activeTab === "analytics" ? "block" : "hidden"} lg:block`}
           >
-            <div className="flex space-x-3 md:space-x-4">
-              <img
-                src="/placeholder.svg?height=48&width=48&text=SC"
-                alt="Your avatar"
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#ff9ec6]/20 flex-shrink-0"
-              />
-              <div className="flex-1">
-                <div
-                  onClick={() => setShowCreatePostModal(true)}
-                  className={`w-full p-3 md:p-4 rounded-xl cursor-text transition-all duration-200 ${
-                    isDarkMode
-                      ? "bg-transparent border border-gray-700/30 hover:border-gray-600/50"
-                      : "bg-transparent border border-gray-300/30 hover:border-gray-400/50"
-                  }`}
-                >
-                  <p className={`${mutedTextClass} text-base md:text-lg`}>
-                    Share your expertise, insights, or startup tips with the community...
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
-                  <div className="flex items-center space-x-4">
-                    <Button
-                      onClick={() => setShowCreatePostModal(true)}
-                      variant="ghost"
-                      size="sm"
-                      className={`${mutedTextClass} hover:${textClass} hover:bg-[#ff9ec6]/10 rounded-full p-2`}
-                    >
-                      <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
-                    </Button>
-                    <span className={`text-xs md:text-sm ${mutedTextClass} hidden sm:block`}>
-                      💡 Tip: Regular posting increases your visibility by 3x
-                    </span>
-                  </div>
-
-                  <Button
-                    onClick={() => setShowCreatePostModal(true)}
-                    className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full px-4 md:px-6 py-2 font-semibold w-full sm:w-auto"
+            <div className="sticky top-24 py-6">
+              <div className="space-y-6">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-3 lg:gap-4">
+                  {/* Total Earnings */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} col-span-2 rounded-xl lg:rounded-2xl border shadow-lg p-3 lg:p-4`}
                   >
-                    Post
-                  </Button>
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${isDarkMode ? "bg-green-900/20" : "bg-green-100/50"}`}>
+                        <DollarSign className="h-4 w-4 lg:h-5 lg:w-5 text-green-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-xs lg:text-sm ${mutedTextClass}`}>Total Earnings</p>
+                        <p className="text-lg lg:text-xl font-bold">₹{mentorStats.totalEarnings.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center space-x-1 text-green-500">
+                        <ArrowUpRight className="h-3 w-3 lg:h-4 lg:w-4" />
+                        <span className="text-xs lg:text-sm font-medium">+{mentorStats.earningsGrowth}%</span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Sessions Completed */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-xl lg:rounded-2xl border col-span-2 shadow-lg p-3 lg:p-4`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50"}`}>
+                        <CheckCircle className="h-4 w-4 lg:h-5 lg:w-5 text-blue-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-xs lg:text-sm ${mutedTextClass}`}>Sessions</p>
+                        <p className="text-lg lg:text-xl font-bold">{mentorStats.completedSessions}</p>
+                      </div>
+                      <div className="flex items-center space-x-1 text-blue-500">
+                        <span className="text-xs lg:text-sm font-medium">{mentorStats.thisMonthSessions}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Rating */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-xl lg:rounded-2xl border shadow-lg p-3 lg:p-4 col-span-2 lg:col-span-1`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50"}`}>
+                        <Star className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-500 fill-current" />
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-xs lg:text-sm ${mutedTextClass}`}>Rating</p>
+                        <p className="text-lg lg:text-xl font-bold">{mentorStats.rating}</p>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className={`text-xs lg:text-sm font-medium ${mutedTextClass}`}>
+                          {mentorStats.totalReviews} reviews
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
+
+                {/* Upcoming Sessions */}
+
+                {/* Recent Activity */}
               </div>
             </div>
           </div>
 
-          {/* Posts Feed */}
-          <div className="space-y-6">
-            {posts.map((post) => (
+          {/* Left Column - Community Feed (X.com Main Feed Style) - Now second in source order for mobile */}
+
+          <div
+            className={`lg:col-span-8 xl:col-span-7 lg:order-1 ${activeTab === "community" ? "block" : "hidden"} lg:block`}
+          >
+            <div className="py-6">
+              {/* Community Feed Header */}
+              <div className="mb-6">
+                <h2 className="text-xl md:text-2xl font-bold mb-2 flex items-center space-x-2">
+                  <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-[#ff9ec6]" />
+                  <span>Community Feed</span>
+                  <span className="px-2 py-1 rounded-full bg-[#ff9ec6]/20 text-[#ff9ec6] text-xs font-medium">
+                    Required
+                  </span>
+                </h2>
+                <p className={`${mutedTextClass} text-sm md:text-base`}>
+                  Share your expertise and engage with the community to build your reputation and attract more mentees.
+                </p>
+              </div>
+
+              {/* Create Post Section */}
               <div
-                key={post.id}
-                className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6`}
+                className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6 mb-6`}
               >
-                {/* Post Header */}
-                <div className="flex items-center space-x-3 mb-4">
+                <div className="flex space-x-3 md:space-x-4">
                   <img
-                    src={post.author.avatar || "/placeholder.svg"}
-                    alt={post.author.name}
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#ff9ec6]/20"
+                    src="/placeholder.svg?height=48&width=48&text=SC"
+                    alt="Your avatar"
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#ff9ec6]/20 flex-shrink-0"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold text-sm md:text-base">{post.author.name}</h4>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#ff9ec6]/20 text-[#ff9ec6]">
-                        {post.author.role}
-                      </span>
+                    <div
+                      onClick={() => setShowCreatePostModal(true)}
+                      className={`w-full p-3 md:p-4 rounded-xl cursor-text transition-all duration-200 ${
+                        isDarkMode
+                          ? "bg-transparent border border-gray-700/30 hover:border-gray-600/50"
+                          : "bg-transparent border border-gray-300/30 hover:border-gray-400/50"
+                      }`}
+                    >
+                      <p className={`${mutedTextClass} text-base md:text-lg`}>
+                        Share your expertise, insights, or startup tips with the community...
+                      </p>
                     </div>
-                    <p className={`text-xs md:text-sm ${mutedTextClass}`}>
-                      {post.author.field} • {post.timestamp}
-                    </p>
-                  </div>
-                </div>
 
-                {/* Post Content */}
-                <div className="mb-4">
-                  <p className="whitespace-pre-line mb-4 text-sm md:text-base">{post.content}</p>
-                  {post.image && (
-                    <img
-                      src={post.image || "/placeholder.svg"}
-                      alt="Post content"
-                      className="w-full rounded-xl max-h-64 md:max-h-96 object-cover"
-                    />
-                  )}
-                </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          onClick={() => setShowCreatePostModal(true)}
+                          variant="ghost"
+                          size="sm"
+                          className={`${mutedTextClass} hover:${textClass} hover:bg-[#ff9ec6]/10 rounded-full p-2`}
+                        >
+                          <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
+                        </Button>
+                        <span className={`text-xs md:text-sm ${mutedTextClass} hidden sm:block`}>
+                          💡 Tip: Regular posting increases your visibility by 3x
+                        </span>
+                      </div>
 
-                {/* Post Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-800/20">
-                  <div className="flex items-center space-x-4 md:space-x-6">
-                    <button
-                      onClick={() => handleLikePost(post.id)}
-                      className={`flex items-center space-x-2 transition-colors ${
-                        post.liked ? "text-red-500" : mutedTextClass
-                      } hover:text-red-500`}
-                    >
-                      <Heart className={`h-4 w-4 md:h-5 md:w-5 ${post.liked ? "fill-current" : ""}`} />
-                      <span className="text-sm">{post.likes}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedPost(post)
-                        setShowCommentModal(true)
-                      }}
-                      className={`flex items-center space-x-2 ${mutedTextClass} hover:${textClass} transition-colors`}
-                    >
-                      <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-                      <span className="text-sm">{post.comments.length}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Comments Section */}
-                {post.comments.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-800/20">
-                    <div className="space-y-3">
-                      {post.comments.map((comment) => (
-                        <div key={comment.id} className="flex items-start space-x-3">
-                          <img
-                            src={comment.avatar || "/placeholder.svg"}
-                            alt={comment.author}
-                            className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-[#ff9ec6]/20"
-                          />
-                          <div className="flex-1">
-                            <div
-                              className={`p-3 rounded-xl ${isDarkMode ? "bg-gray-800/60" : "bg-gray-100/70"} shadow-sm`}
-                            >
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="font-semibold text-xs md:text-sm">{comment.author}</span>
-                                <span className={`text-xs ${mutedTextClass}`}>{comment.timestamp}</span>
-                              </div>
-                              <p className="text-xs md:text-sm">{comment.content}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      <Button
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-full px-4 md:px-6 py-2 font-semibold w-full sm:w-auto"
+                      >
+                        Post
+                      </Button>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
-            ))}
+
+              {/* Posts Feed */}
+              <div className="space-y-6">
+                {posts.map((post) => (
+                  <div
+                    key={post.id}
+                    className={`backdrop-blur-xl ${isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"} rounded-2xl border shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow`}
+                  >
+                    {/* Post Header */}
+                    <div className="flex items-center space-x-3 mb-4">
+                      <img
+                        src={post.author.avatar || "/placeholder.svg"}
+                        alt={post.author.name}
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#ff9ec6]/20"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-semibold text-sm md:text-base">{post.author.name}</h4>
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#ff9ec6]/20 text-[#ff9ec6]">
+                            {post.author.role}
+                          </span>
+                        </div>
+                        <p className={`text-xs md:text-sm ${mutedTextClass}`}>
+                          {post.author.field} • {post.timestamp}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Post Content */}
+                    <div className="mb-4">
+                      <p className="whitespace-pre-line mb-4 text-sm md:text-base">{post.content}</p>
+                      {post.image && (
+                        <img
+                          src={post.image || "/placeholder.svg"}
+                          alt="Post content"
+                          className="w-full rounded-xl max-h-64 md:max-h-96 object-cover"
+                        />
+                      )}
+                    </div>
+
+                    {/* Post Actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-800/20">
+                      <div className="flex items-center space-x-4 md:space-x-6">
+                        <button
+                          onClick={() => handleLikePost(post.id)}
+                          className={`flex items-center space-x-2 transition-colors ${
+                            post.liked ? "text-red-500" : mutedTextClass
+                          } hover:text-red-500`}
+                        >
+                          <Heart className={`h-4 w-4 md:h-5 md:w-5 ${post.liked ? "fill-current" : ""}`} />
+                          <span className="text-sm">{post.likes}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedPost(post)
+                            setShowCommentModal(true)
+                          }}
+                          className={`flex items-center space-x-2 ${mutedTextClass} hover:${textClass} transition-colors`}
+                        >
+                          <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
+                          <span className="text-sm">{post.comments.length}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Comments Section */}
+                    {post.comments.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-800/20">
+                        <div className="space-y-3">
+                          {post.comments.map((comment) => (
+                            <div key={comment.id} className="flex items-start space-x-3">
+                              <img
+                                src={comment.avatar || "/placeholder.svg"}
+                                alt={comment.author}
+                                className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-[#ff9ec6]/20"
+                              />
+                              <div className="flex-1">
+                                <div
+                                  className={`p-3 rounded-xl ${isDarkMode ? "bg-gray-800/60" : "bg-gray-100/70"} shadow-sm`}
+                                >
+                                  <div className="flex items-center space-x-2 mb-1">
+                                    <span className="font-semibold text-xs md:text-sm">{comment.author}</span>
+                                    <span className={`text-xs ${mutedTextClass}`}>{comment.timestamp}</span>
+                                  </div>
+                                  <p className="text-xs md:text-sm">{comment.content}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Profile Completion Modal - Updated to 3 steps */}
+      {/* Profile Completion Modal */}
       <AnimatePresence>
         {showProfileCompletionModal && (
           <motion.div
@@ -941,6 +874,7 @@ export default function MentorDashboard() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
+            <ScrollToTop/>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1099,6 +1033,7 @@ export default function MentorDashboard() {
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-4 md:space-y-6"
                     >
+                      <ScrollToTop/>
                       <div className="text-center mb-6 md:mb-8">
                         <h4 className="text-lg md:text-xl font-bold mb-2">About You & Expertise</h4>
                         <p className={mutedTextClass}>Share your story and areas of expertise</p>
@@ -1189,6 +1124,9 @@ What I can help you with:
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-4 md:space-y-6"
                     >
+                      <ScrollToTop/>
+                      
+
                       <div className="text-center mb-6 md:mb-8">
                         <h4 className="text-lg md:text-xl font-bold mb-2">Final Details & Review</h4>
                         <p className={mutedTextClass}>Complete your profile and review everything</p>
@@ -1305,7 +1243,9 @@ What I can help you with:
                               profileData.languages.slice(0, 4).map((language) => (
                                 <span
                                   key={language}
-                                  className={`px-3 py-1 rounded-full ${isDarkMode ? "bg-gray-700/50" : "bg-gray-200/50"} text-sm font-medium`}
+                                  className={`px-3 py-1 rounded-full ${
+                                    isDarkMode ? "bg-gray-700/50" : "bg-gray-200/50"
+                                  } text-sm font-medium`}
                                 >
                                   {language}
                                 </span>
@@ -1313,18 +1253,17 @@ What I can help you with:
                             ) : (
                               <span className={`${mutedTextClass} text-sm`}>No languages selected</span>
                             )}
+                            {profileData.languages.length > 4 && (
+                              <span
+                                className={`px-3 py-1 rounded-full ${
+                                  isDarkMode ? "bg-gray-700/50" : "bg-gray-200/50"
+                                } text-sm`}
+                              >
+                                +{profileData.languages.length - 4} more
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </div>
-
-                      {/* Completion Message */}
-                      <div className="text-center p-4 md:p-6 rounded-xl bg-gradient-to-r from-[#ff9ec6]/10 to-[#ff9ec6]/5 border border-[#ff9ec6]/20">
-                        <Star className="h-10 w-10 md:h-12 md:w-12 text-[#ff9ec6] mx-auto mb-3" />
-                        <h4 className="text-base md:text-lg font-bold mb-2">You're Ready to Mentor! 🎉</h4>
-                        <p className={`${mutedTextClass} text-xs md:text-sm`}>
-                          Your profile is now complete and ready to attract mentees. Remember to actively participate in
-                          the community feed to increase your visibility.
-                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -1336,14 +1275,16 @@ What I can help you with:
                     onClick={prevStep}
                     disabled={profileCompletionStep === 1}
                     variant="outline"
-                    className={`${isDarkMode ? "border-gray-700/50 hover:bg-gray-800/50" : "border-gray-300/50 hover:bg-gray-100/50"} rounded-xl px-4 md:px-6 disabled:opacity-50 w-full sm:w-auto`}
+                    className={`${
+                      isDarkMode ? "border-gray-700/50 hover:bg-gray-800/50" : "border-gray-300/50 hover:bg-gray-100/50"
+                    } rounded-xl px-4 md:px-6 disabled:opacity-50 w-full sm:w-auto`}
                   >
                     Previous
                   </Button>
 
                   <div className="flex items-center justify-center space-x-2">
                     {[1, 2, 3].map((step) => (
-                      <div
+                      <span
                         key={step}
                         className={`w-2 h-2 rounded-full transition-colors ${
                           step <= profileCompletionStep ? "bg-[#ff9ec6]" : isDarkMode ? "bg-gray-700" : "bg-gray-300"
@@ -1374,81 +1315,6 @@ What I can help you with:
         )}
       </AnimatePresence>
 
-      {/* Create Post Modal */}
-      <AnimatePresence>
-        {showCreatePostModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowCreatePostModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-lg backdrop-blur-xl ${isDarkMode ? "bg-gray-900/98 border-gray-700/60" : "bg-white/98 border-gray-300/60"} rounded-3xl border shadow-2xl`}
-            >
-              <div className="p-4 md:p-6">
-                <div className="flex items-center justify-between mb-4 md:mb-6">
-                  <h3 className="text-xl md:text-2xl font-bold">Create Post</h3>
-                  <Button
-                    onClick={() => setShowCreatePostModal(false)}
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full p-2"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                <div className="space-y-4 md:space-y-6">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <img
-                      src="/placeholder.svg?height=40&width=40&text=SC"
-                      alt="Your avatar"
-                      className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-[#ff9ec6]/20"
-                    />
-                    <div>
-                      <h4 className="font-semibold text-sm md:text-base">{profileData.name}</h4>
-                      <p className={`text-xs md:text-sm ${mutedTextClass}`}>Mentor</p>
-                    </div>
-                  </div>
-
-                  <Textarea
-                    value={newPost.content}
-                    onChange={(e) => setNewPost((prev) => ({ ...prev, content: e.target.value }))}
-                    placeholder="Share your expertise, insights, or startup tips with the community..."
-                    rows={6}
-                    className={`${isDarkMode ? "bg-gray-800/50 border-gray-700/50" : "bg-white/50 border-gray-300/50"} rounded-xl resize-none border-0 focus:ring-2 focus:ring-[#ff9ec6]/20`}
-                  />
-
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                    <Button
-                      variant="ghost"
-                      className="flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-start"
-                    >
-                      <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
-                      <span>Add Image</span>
-                    </Button>
-
-                    <Button
-                      onClick={handleCreatePost}
-                      disabled={!newPost.content.trim()}
-                      className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-xl px-4 md:px-6 disabled:opacity-50 w-full sm:w-auto"
-                    >
-                      Post
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Comment Modal */}
       <AnimatePresence>
         {showCommentModal && selectedPost && (
@@ -1464,11 +1330,11 @@ What I can help you with:
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-lg backdrop-blur-xl ${isDarkMode ? "bg-gray-900/98 border-gray-700/60" : "bg-white/98 border-gray-300/60"} rounded-3xl border shadow-2xl max-h-[80vh] overflow-y-auto`}
+              className={`w-full max-w-lg backdrop-blur-xl ${isDarkMode ? "bg-gray-900/95 border-gray-800/50" : "bg-white/95 border-gray-200/50"} rounded-3xl border shadow-2xl max-h-[80vh] overflow-y-auto`}
             >
-              <div className="p-4 md:p-6">
-                <div className="flex items-center justify-between mb-4 md:mb-6">
-                  <h3 className="text-lg md:text-xl font-bold">Comments</h3>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold">Comments</h3>
                   <Button
                     onClick={() => setShowCommentModal(false)}
                     variant="ghost"
@@ -1480,39 +1346,37 @@ What I can help you with:
                 </div>
 
                 {/* Post Preview */}
-                <div
-                  className={`p-3 md:p-4 rounded-xl ${isDarkMode ? "bg-gray-800/60" : "bg-gray-100/70"} mb-4 md:mb-6 shadow-sm`}
-                >
+                <div className={`p-4 rounded-xl ${isDarkMode ? "bg-gray-800/30" : "bg-gray-100/30"} mb-6`}>
                   <div className="flex items-center space-x-3 mb-3">
                     <img
                       src={selectedPost.author.avatar || "/placeholder.svg"}
                       alt={selectedPost.author.name}
-                      className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-[#ff9ec6]/20"
+                      className="w-10 h-10 rounded-full border-2 border-[#ff9ec6]/20"
                     />
                     <div>
-                      <h4 className="font-semibold text-sm md:text-base">{selectedPost.author.name}</h4>
-                      <p className={`text-xs md:text-sm ${mutedTextClass}`}>{selectedPost.timestamp}</p>
+                      <h4 className="font-semibold">{selectedPost.author.name}</h4>
+                      <p className={`text-sm ${mutedTextClass}`}>{selectedPost.timestamp}</p>
                     </div>
                   </div>
-                  <p className="text-xs md:text-sm line-clamp-3">{selectedPost.content}</p>
+                  <p className="text-sm line-clamp-3">{selectedPost.content}</p>
                 </div>
 
                 {/* Comments List */}
-                <div className="space-y-4 mb-4 md:mb-6 max-h-60 overflow-y-auto">
+                <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
                   {selectedPost.comments.map((comment) => (
                     <div key={comment.id} className="flex items-start space-x-3">
                       <img
                         src={comment.avatar || "/placeholder.svg"}
                         alt={comment.author}
-                        className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-[#ff9ec6]/20"
+                        className="w-8 h-8 rounded-full border border-[#ff9ec6]/20"
                       />
                       <div className="flex-1">
-                        <div className={`p-3 rounded-xl ${isDarkMode ? "bg-gray-800/60" : "bg-gray-100/70"} shadow-sm`}>
+                        <div className={`p-3 rounded-xl ${isDarkMode ? "bg-gray-800/30" : "bg-gray-100/30"}`}>
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-semibold text-xs md:text-sm">{comment.author}</span>
+                            <span className="font-semibold text-sm">{comment.author}</span>
                             <span className={`text-xs ${mutedTextClass}`}>{comment.timestamp}</span>
                           </div>
-                          <p className="text-xs md:text-sm">{comment.content}</p>
+                          <p className="text-sm">{comment.content}</p>
                         </div>
                       </div>
                     </div>
@@ -1524,9 +1388,9 @@ What I can help you with:
                   <img
                     src="/placeholder.svg?height=32&width=32&text=SC"
                     alt="Your avatar"
-                    className="w-6 h-6 md:w-8 md:h-8 rounded-full border border-[#ff9ec6]/20"
+                    className="w-8 h-8 rounded-full border border-[#ff9ec6]/20"
                   />
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                  <div className="flex-1 flex items-center space-x-2">
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
@@ -1541,9 +1405,81 @@ What I can help you with:
                     <Button
                       onClick={handleAddComment}
                       disabled={!newComment.trim()}
-                      className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-xl px-3 md:px-4 disabled:opacity-50 w-full sm:w-auto"
+                      className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-xl px-4 disabled:opacity-50"
                     >
                       <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Post Modal */}
+      <AnimatePresence>
+        {showCreatePostModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCreatePostModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`w-full max-w-lg backdrop-blur-xl ${isDarkMode ? "bg-gray-900/95 border-gray-800/50" : "bg-white/95 border-gray-200/50"} rounded-3xl border shadow-2xl`}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold">Create Post</h3>
+                  <Button
+                    onClick={() => setShowCreatePostModal(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full p-2"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <img
+                      src="/placeholder.svg?height=40&width=40&text=SC"
+                      alt="Your avatar"
+                      className="w-10 h-10 rounded-full border-2 border-[#ff9ec6]/20"
+                    />
+                    <div>
+                      <h4 className="font-semibold">{profileData.name}</h4>
+                      <p className={`text-sm ${mutedTextClass}`}>Mentor</p>
+                    </div>
+                  </div>
+
+                  <Textarea
+                    value={newPost.content}
+                    onChange={(e) => setNewPost((prev) => ({ ...prev, content: e.target.value }))}
+                    placeholder="What's on your mind? Share your expertise, insights, or startup tips with the community!"
+                    rows={6}
+                    className={`${isDarkMode ? "bg-gray-800/50 border-gray-700/50" : "bg-white/50 border-gray-300/50"} rounded-xl resize-none border-0 focus:ring-2 focus: : "bg-white/50 border-gray-300/50"} rounded-xl resize-none border-0 focus:ring-2 focus-[#ff9ec6]/20`}
+                  />
+
+                  <div className="flex items-center justify-between">
+                    <Button variant="ghost" className="flex items-center space-x-2">
+                      <ImageIcon className="h-5 w-5" />
+                      <span>Add Image</span>
+                    </Button>
+
+                    <Button
+                      onClick={handleCreatePost}
+                      disabled={!newPost.content.trim()}
+                      className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-xl px-6 disabled:opacity-50"
+                    >
+                      Post
                     </Button>
                   </div>
                 </div>
