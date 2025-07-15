@@ -14,6 +14,7 @@ const {
     resendVerificationEmail
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const upload = require("../middlewares/uploadMiddleware");
 
 // Public routes
 router.post("/signup", userSignup);
@@ -25,7 +26,7 @@ router.post("/resend-verification", resendVerificationEmail);
 
 // Protected routes
 router.get("/profile", authMiddleware, getUserProfile);
-router.put("/profile", authMiddleware, updateUserProfile);
+router.put("/profile", authMiddleware, upload.single('profilePic'), updateUserProfile);
 router.put("/subscription", authMiddleware, updateSubscriptionPlan);
 
 // Mentor search (public but can be enhanced with auth for personalized results)

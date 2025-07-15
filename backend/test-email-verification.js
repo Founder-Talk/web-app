@@ -17,7 +17,7 @@ async function testEmailVerification() {
             return;
         }
         console.log('✅ Email configuration found');
-        
+
         // Test 2: Test email sending (commented out to avoid spam)
         console.log('\n2. Testing email sending...');
         console.log('⚠️  Email sending test skipped to avoid spam. Uncomment the code below to test.');
@@ -51,6 +51,7 @@ async function testEmailVerification() {
         console.log('\n4. Testing token generation...');
         const testToken = crypto.randomBytes(32).toString('hex');
         const testExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        
         console.log('✅ Token generated:', testToken.substring(0, 16) + '...');
         console.log('✅ Expiry set to:', testExpiry.toISOString());
         
