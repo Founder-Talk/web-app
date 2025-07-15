@@ -9,6 +9,8 @@ import MentorProfile from "./MentorProfile"
 import CommunityFeed from "../community/CommunityFeed"
 import { useDispatch } from "react-redux"
 import { clearUser } from "@/redux/slice/userslice"
+import Nav from "@/components/common/nav/nav"
+import Analytics from "./Analytics"
 
 export default function MentorDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -148,247 +150,84 @@ export default function MentorDashboard() {
   }
 
   // Analytics component with only 3 cards
-  const Analytics = () => {
-    const analyticsData = [
-      {
-        id: "earnings",
-        title: "Total Earnings",
-        value: `₹${mentorStats.totalEarnings.toLocaleString()}`,
-        subtitle: `₹${mentorStats.monthlyEarnings.toLocaleString()} this month`,
-        icon: DollarSign,
-        color: "text-green-500",
-        bgColor: isDarkMode ? "bg-green-900/20" : "bg-green-100/50",
-      },
-      {
-        id: "sessions",
-        title: "Sessions Completed",
-        value: mentorStats.completedSessions.toString(),
-        subtitle: `${mentorStats.thisMonthSessions} this month`,
-        icon: CheckCircle,
-        color: "text-blue-500",
-        bgColor: isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50",
-      },
-      {
-        id: "rating",
-        title: "Average Rating",
-        value: mentorStats.rating.toString(),
-        subtitle: `${mentorStats.totalReviews} reviews`,
-        icon: Star,
-        color: "text-yellow-500",
-        bgColor: isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50",
-      },
-    ]
+  // const Analytics = () => {
+  //   const analyticsData = [
+  //     {
+  //       id: "earnings",
+  //       title: "Total Earnings",
+  //       value: `₹${mentorStats.totalEarnings.toLocaleString()}`,
+  //       subtitle: `₹${mentorStats.monthlyEarnings.toLocaleString()} this month`,
+  //       icon: DollarSign,
+  //       color: "text-green-500",
+  //       bgColor: isDarkMode ? "bg-green-900/20" : "bg-green-100/50",
+  //     },
+  //     {
+  //       id: "sessions",
+  //       title: "Sessions Completed",
+  //       value: mentorStats.completedSessions.toString(),
+  //       subtitle: `${mentorStats.thisMonthSessions} this month`,
+  //       icon: CheckCircle,
+  //       color: "text-blue-500",
+  //       bgColor: isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50",
+  //     },
+  //     {
+  //       id: "rating",
+  //       title: "Average Rating",
+  //       value: mentorStats.rating.toString(),
+  //       subtitle: `${mentorStats.totalReviews} reviews`,
+  //       icon: Star,
+  //       color: "text-yellow-500",
+  //       bgColor: isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50",
+  //     },
+  //   ]
 
-    return (
-      <div className="space-y-4 sticky top-0">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold mb-2 flex items-center space-x-2 ">
-            <div className={`p-2 rounded-lg ${isDarkMode ? "bg-gray-800/50" : "bg-gray-100/50"}`}>
-              <DollarSign className="h-5 w-5 text-[#ff9ec6]" />
-            </div>
-            <span>Analytics Overview</span>
-          </h2>
-          <p className={`${mutedTextClass} text-sm`}>Your mentoring performance at a glance</p>
-        </div>
+  //   return (
+  //     <div className="space-y-4 sticky top-0">
+  //       <div className="mb-6">
+  //         <h2 className="text-xl font-bold mb-2 flex items-center space-x-2 ">
+  //           <div className={`p-2 rounded-lg ${isDarkMode ? "bg-gray-800/50" : "bg-gray-100/50"}`}>
+  //             <DollarSign className="h-5 w-5 text-[#ff9ec6]" />
+  //           </div>
+  //           <span>Analytics Overview</span>
+  //         </h2>
+  //         <p className={`${mutedTextClass} text-sm`}>Your mentoring performance at a glance</p>
+  //       </div>
 
-        <div className="grid grid-cols-1 gap-4 ">
-          {analyticsData.map((item, index) => {
-            const IconComponent = item.icon
-            return (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`backdrop-blur-xl ${
-                  isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"
-                } rounded-xl border shadow-lg p-4 hover:shadow-xl transition-all duration-300`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg ${item.bgColor}`}>
-                    <IconComponent className={`h-5 w-5 ${item.color}`} />
-                  </div>
-                </div>
-                <div>
-                  <p className={`text-xs ${mutedTextClass} mb-1`}>{item.title}</p>
-                  <p className="text-xl font-bold mb-1">{item.value}</p>
-                  <p className={`text-xs ${mutedTextClass}`}>{item.subtitle}</p>
-                </div>
-              </motion.div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
+  //       <div className="grid grid-cols-1 gap-4 ">
+  //         {analyticsData.map((item, index) => {
+  //           const IconComponent = item.icon
+  //           return (
+  //             <motion.div
+  //               key={item.id}
+  //               initial={{ opacity: 0, y: 20 }}
+  //               animate={{ opacity: 1, y: 0 }}
+  //               transition={{ delay: index * 0.1 }}
+  //               className={`backdrop-blur-xl ${
+  //                 isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"
+  //               } rounded-xl border shadow-lg p-4 hover:shadow-xl transition-all duration-300`}
+  //             >
+  //               <div className="flex items-center justify-between mb-3">
+  //                 <div className={`p-2 rounded-lg ${item.bgColor}`}>
+  //                   <IconComponent className={`h-5 w-5 ${item.color}`} />
+  //                 </div>
+  //               </div>
+  //               <div>
+  //                 <p className={`text-xs ${mutedTextClass} mb-1`}>{item.title}</p>
+  //                 <p className="text-xl font-bold mb-1">{item.value}</p>
+  //                 <p className={`text-xs ${mutedTextClass}`}>{item.subtitle}</p>
+  //               </div>
+  //             </motion.div>
+  //           )
+  //         })}
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-300`}>
       {/* Header */}
-      <header
-        className={`sticky top-0 z-50 backdrop-blur-xl ${
-          isDarkMode ? "bg-black/80 border-gray-900/50" : "bg-white/80 border-gray-200/50"
-        } border-b`}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="text-xl md:text-2xl font-bold text-[#ff9ec6] hover:text-[#ff9ec6]/80 transition-colors"
-            >
-              Foundertalk
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-full ${
-                  isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                } transition-colors`}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-5 w-5 text-gray-400 hover:text-white" />
-                ) : (
-                  <Moon className="h-5 w-5 text-gray-600 hover:text-gray-900" />
-                )}
-              </button>
-
-              {/* Chat Button */}
-              <Link href="/chats">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2`}
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </Button>
-              </Link>
-
-              {/* Profile Dropdown */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2`}
-                >
-                  <User className="h-5 w-5" />
-                  <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-
-                <AnimatePresence>
-                  {showProfileDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`absolute right-0 mt-2 w-56 backdrop-blur-xl ${
-                        isDarkMode ? "bg-gray-900/95 border-gray-700/60" : "bg-white/95 border-gray-300/60"
-                      } rounded-xl border shadow-xl`}
-                    >
-                      <div className="py-2">
-                        <button
-                          onClick={() => {
-                            setShowProfileCompletionModal(true)
-                            setShowProfileDropdown(false)
-                          }}
-                          className={`w-full px-4 py-3 text-left ${
-                            isDarkMode ? "hover:bg-gray-800/50" : "hover:bg-gray-100/50"
-                          } transition-colors flex items-center space-x-3`}
-                        >
-                          <User className="h-4 w-4 text-[#ff9ec6]" />
-                          <span>Complete Profile</span>
-                        </button>
-                        <div
-                          className={`border-t ${isDarkMode ? "border-gray-800/50" : "border-gray-200/50"} my-2`}
-                        ></div>
-                        <button
-                          onClick={()=>{dispatch(clearUser())}}
-                          className={`w-full px-4 py-3 text-left ${
-                            isDarkMode ? "hover:bg-red-900/20 text-red-400" : "hover:bg-red-50 text-red-600"
-                          } transition-colors flex items-center space-x-3`}
-                        >
-                          <LogOut className="h-4 w-4" />
-                          <span>Log Out</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2`}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          <AnimatePresence>
-            {showMobileMenu && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="md:hidden mt-4 pt-4 border-t border-gray-800/20"
-              >
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <button
-                        onClick={toggleTheme}
-                        className={`p-2 rounded-full ${
-                          isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                        } transition-colors`}
-                      >
-                        {isDarkMode ? (
-                          <Sun className="h-5 w-5 text-gray-400" />
-                        ) : (
-                          <Moon className="h-5 w-5 text-gray-600" />
-                        )}
-                      </button>
-
-                      <Link href="/chats">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} rounded-full p-2`}
-                        >
-                          <MessageCircle className="h-5 w-5" />
-                        </Button>
-                      </Link>
-                    </div>
-
-                    <Button
-                      onClick={() => {
-                        setShowProfileCompletionModal(true)
-                        setShowMobileMenu(false)
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="text-[#ff9ec6] border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </header>
+      <Nav/>
 
       {/* Welcome Section */}
       <div className="max-w-7xl mx-auto px-4 py-6 border-b border-gray-800/20">
@@ -451,7 +290,7 @@ export default function MentorDashboard() {
               activeTab === "analytics" ? "block" : "hidden lg:block"
             } space-y-6`}
           >
-            <Analytics />
+           <Analytics isDarkMode={isDarkMode}/>
 
             {/* Quick Actions */}
             
