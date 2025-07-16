@@ -1,205 +1,394 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { Users, MessageCircle, Search } from "lucide-react";
-import Nav from "@/components/common/nav/nav";
-import MentorCard from "./mentorCard";
+import { useState, useMemo } from "react"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight, Users, BookOpen } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useDispatch, useSelector } from "react-redux"
+
+// Import components
+import MentorCard from "./mentorCard"
+import MentorProfile from "./MentorProfile"
+import CommunityFeed from "../community/CommunityFeed"
+import SearchAndFilter from "./SearchAndFilter"
+import Nav from "@/components/common/nav/nav"
+import Footer from '@/components/common/foot/foot'
+export default function MenteeDashboard() {
+  const [isDarkMode, setIsDarkMode] = useState(true)
+  const [activeSection, setActiveSection] = useState("mentors") // "mentors" or "feed"
+  const [selectedMentor, setSelectedMentor] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const profileData = useSelector((state) => state.user.user);
+  const [filters, setFilters] = useState({
+    rating: 0,
+    priceRange: [0, 100000],
+    field: "",
+    experience: "",
+    availability: "",
+  })
 
 
-const mentors = [
-  {
-    id: "1",
-    name: "Aarti Patel",
-    image: "https://i.pravatar.cc/100?img=10",
-    field: "Product Strategy",
-    rating: 4.7,
-    caption: "Helping startups validate and launch MVPs effectively.",
-    charge: 1200,
-  },
-  {
-    id: "2",
-    name: "Rahul Sen",
-    image: "https://i.pravatar.cc/100?img=12",
-    field: "Tech Architecture",
-    rating: 4.3,
-    caption: "CTO experience in scaling backend systems and dev teams.",
-    charge: 1500,
-  },
-  {
-    id: "3",
-    name: "Meena Iyer",
-    image: "https://i.pravatar.cc/100?img=13",
-    field: "Marketing & Branding",
-    rating: 4.9,
-    caption: "Brand strategist for D2C startups and early-stage companies.",
-    charge: 900,
-  },
-  {
-    id: "4",
-    name: "Aman Khanna",
-    image: "https://i.pravatar.cc/100?img=20",
-    field: "Fundraising",
-    rating: 4.6,
-    caption: "Ex-VC, helps founders prepare for investor meetings.",
-    charge: 2000,
-  },
-  {
-    id: "5",
-    name: "Simran Doshi",
-    image: "https://i.pravatar.cc/100?img=21",
-    field: "UI/UX Design",
-    rating: 4.5,
-    caption: "Design mentor with experience in SaaS and fintech products.",
-    charge: 1100,
-  },
-  {
-    id: "6",
-    name: "Mohit Verma",
-    image: "https://i.pravatar.cc/100?img=25",
-    field: "Business Development",
-    rating: 4.2,
-    caption: "10+ years in sales and GTM strategies for B2B startups.",
-    charge: 1000,
-  },
-  {
-    id: "7",
-    name: "Sneha Mehra",
-    image: "https://i.pravatar.cc/100?img=33",
-    field: "Legal & Compliance",
-    rating: 4.8,
-    caption: "Startup-friendly legal advisor for IP, contracts & fundraising.",
-    charge: 1800,
-  },
-  {
-    id: "8",
-    name: "Anuj Sharma",
-    image: "https://i.pravatar.cc/100?img=34",
-    field: "Hiring & Team Building",
-    rating: 4.4,
-    caption: "Helped 25+ startups hire early engineering & design teams.",
-    charge: 1300,
-  },
-  {
-    id: "9",
-    name: "Divya Rao",
-    image: "https://i.pravatar.cc/100?img=35",
-    field: "Growth Hacking",
-    rating: 4.9,
-    caption: "Scaled 3 apps to 1M+ users through data-driven growth.",
-    charge: 1600,
-  },
-];
 
-function MenteeDashboard({ user = useSelector((state) => state.user.user) }) {
-  const isDarkMode = useSelector((state) => state.theme.mode === "light");
-  const [selectedTab, setSelectedTab] = useState("mentor");
-  const [search, setSearch] = useState("");
+  // Mock mentor data
+  const mentorData = Array.from({ length: 36 }, (_, i) => ({
+    id: i + 1,
+    name: `Mentor ${i + 1}`,
+    field: ["Tech Startup", "E-commerce", "SaaS", "FinTech", "HealthTech"][i % 5],
+    caption: "Helping founders scale their startups with proven strategies and insights.",
+    fullDescription: `I'm a seasoned entrepreneur with over ${5 + (i % 10)} years of experience in building and scaling startups. I've successfully founded ${1 + (i % 3)} companies, with my latest venture being acquired by a Fortune 500 company.
 
-  const baseStyles = `flex-1 py-4 px-4 sm:px-6 text-center text-sm sm:text-base font-semibold transition-colors cursor-pointer`;
-  const active = isDarkMode
-    ? "bg-[#ff9ec6]/20 text-[#ff9ec6]"
-    : "bg-[#ff9ec6]/20 text-[#ff1b85]";
-  const inactive = isDarkMode
-    ? "text-gray-400 hover:bg-gray-800"
-    : "text-gray-600 hover:bg-gray-200";
+My expertise spans across product development, go-to-market strategies, fundraising, and team building. I've helped over ${50 + i * 10}+ founders navigate the challenging startup journey, from ideation to IPO.
 
-  const filteredMentors = mentors.filter(
-    (mentor) =>
-      mentor.name.toLowerCase().includes(search.toLowerCase()) ||
-      mentor.field.toLowerCase().includes(search.toLowerCase())
-  );
+What I can help you with:
+• Product-market fit validation
+• Fundraising strategies and investor relations
+• Scaling operations and team building
+• Go-to-market planning and execution
+• Strategic partnerships and business development
+• Exit strategies and M&A preparation`,
+    rating: Math.floor(Math.random() * 2) + 4, // 4-5 stars
+    price: Math.floor(Math.random() * 500) + 100, // $100-600
+    image: `/placeholder.svg?height=200&width=300&text=Mentor${i + 1}`,
+    profilePic: `/placeholder.svg?height=100&width=100&text=${String.fromCharCode(65 + (i % 26))}`,
+    experience: `${Math.floor(Math.random() * 10) + 5}+ years`,
+    companiesHelped: `${Math.floor(Math.random() * 200) + 50}+`,
+    successRate: `${Math.floor(Math.random() * 10) + 90}%`,
+    location: ["San Francisco, CA", "New York, NY", "London, UK", "Berlin, Germany", "Singapore"][i % 5],
+    languages: ["English", "Spanish", "French", "German", "Mandarin"].slice(0, Math.floor(Math.random() * 3) + 1),
+    responseTime: ["Within 1 hour", "Within 2 hours", "Within 4 hours"][i % 3],
+    totalSessions: Math.floor(Math.random() * 500) + 100,
+    expertise: ["Product Development", "Fundraising", "Team Building", "Go-to-Market", "Strategic Partnerships"].slice(
+      0,
+      Math.floor(Math.random() * 3) + 2,
+    ),
+    availability: ["Available now", "Available this week", "Booking 1 week ahead"][i % 3],
+    posts: [
+      {
+        id: 1,
+        content: `Just helped another startup raise their Series A! 🚀 Key lesson: Focus on your unit economics and show clear path to profitability.`,
+        likes: Math.floor(Math.random() * 50) + 10,
+        comments: [],
+        timestamp: "2 hours ago",
+      },
+    ],
+  }))
+
+  // Mock community posts
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: {
+        name: "Sarah Chen",
+        avatar: "/placeholder.svg?height=40&width=40&text=SC",
+        role: "Mentor",
+        field: "Tech Startup",
+      },
+      content:
+        "Just helped another startup raise their Series A! 🚀 Key lesson: Focus on your unit economics and show clear path to profitability. Investors want to see sustainable growth, not just hockey stick projections.",
+      image: "/placeholder.svg?height=300&width=500&text=Series+A+Tips",
+      likes: 24,
+      comments: [
+        {
+          id: 1,
+          author: "Alex Johnson",
+          avatar: "/placeholder.svg?height=30&width=30&text=AJ",
+          content: "This is so helpful! Thanks for sharing your insights.",
+          timestamp: "1 hour ago",
+        },
+      ],
+      timestamp: "2 hours ago",
+      liked: false,
+    },
+    {
+      id: 2,
+      author: {
+        name: "Marcus Rodriguez",
+        avatar: "/placeholder.svg?height=40&width=40&text=MR",
+        role: "Mentor",
+        field: "E-commerce",
+      },
+      content:
+        "5 key metrics every e-commerce founder should track daily:\n\n1. Customer Acquisition Cost (CAC)\n2. Lifetime Value (LTV)\n3. Conversion Rate\n4. Average Order Value\n5. Return Rate\n\nMaster these and you'll have a clear picture of your business health.",
+      likes: 42,
+      comments: [],
+      timestamp: "1 day ago",
+      liked: false,
+    },
+    {
+      id: 3,
+      author: {
+        name: "Emily Watson",
+        avatar: "/placeholder.svg?height=40&width=40&text=EW",
+        role: "Mentee",
+        field: "SaaS Startup",
+      },
+      content:
+        "Finally launched our MVP! 🎉 Thanks to all the mentors who helped guide us through the product development process. The feedback has been incredible so far. Next milestone: 1000 users!",
+      likes: 67,
+      comments: [
+        {
+          id: 1,
+          author: "Sarah Chen",
+          avatar: "/placeholder.svg?height=30&width=30&text=SC",
+          content: "Congratulations! What's your user acquisition strategy?",
+          timestamp: "2 hours ago",
+        },
+      ],
+      timestamp: "4 hours ago",
+      liked: true,
+    },
+  ])
+
+  const bgClass = isDarkMode ? "bg-gray-950" : "bg-gray-50"
+  const textClass = isDarkMode ? "text-white" : "text-gray-900"
+  const mutedTextClass = isDarkMode ? "text-gray-400" : "text-gray-600"
+  const cardBgClass = isDarkMode ? "bg-gray-900/50" : "bg-white/80"
+  const borderClass = isDarkMode ? "border-gray-800/50" : "border-gray-200/50"
+
+  // Filter mentors based on search query and filters
+  const filteredMentors = useMemo(() => {
+    return mentorData.filter((mentor) => {
+      const matchesSearch =
+        mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        mentor.field.toLowerCase().includes(searchQuery.toLowerCase())
+
+      const matchesRating = filters.rating === 0 || mentor.rating >= filters.rating
+      const matchesPrice = mentor.price >= filters.priceRange[0] && mentor.price <= filters.priceRange[1]
+      const matchesField = !filters.field || mentor.field === filters.field
+      const matchesExperience = !filters.experience || mentor.experience.includes(filters.experience)
+      const matchesAvailability = !filters.availability || mentor.availability === filters.availability
+
+      return matchesSearch && matchesRating && matchesPrice && matchesField && matchesExperience && matchesAvailability
+    })
+  }, [searchQuery, filters, mentorData])
+
+  const postsPerPage = 12
+  const totalPages = Math.ceil(filteredMentors.length / postsPerPage)
+  const currentMentors = filteredMentors.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
+
+  const handleMentorSelect = (mentor) => {
+    setSelectedMentor(mentor)
+  }
+
+  const handleBackToMentors = () => {
+    setSelectedMentor(null)
+  }
+
+  const handleFilterApply = (newFilters) => {
+    setFilters(newFilters)
+    setCurrentPage(1)
+  }
+
+  const handleSearchChange = (query) => {
+    setSearchQuery(query)
+    setCurrentPage(1)
+  }
 
   return (
-    <div
-      className={`min-h-screen  ${
-        isDarkMode ? "bg-black text-white" : "bg-white text-gray-900"
-      } transition-colors`}
-    >
-      <Nav/>
-      <div className="max-w-5xl mx-auto w-full">
-        {/* Welcome Text */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold">
-            Welcome,{" "}
-            <span className="text-[#ff9ec6]">
-              {user?.name?.split(" ")[0] || "Founder"}
-            </span>
-          </h1>
-          <p className="mt-1 text-base text-gray-500">
-            What would you like to explore?
+
+    <div className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-300`}>
+      <Nav />
+
+      {/* Welcome Section */}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b ${borderClass}`}>
+        <div>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">Welcome back, {profileData.name}! 👋</h1>
+          <p className={`${mutedTextClass} text-base md:text-lg`}>
+            Find expert mentors and connect with the startup community
           </p>
         </div>
-
-        {/* Tabs */}
-        <div
-          className={`flex w-full lg:w-[320px] rounded-xl overflow-hidden border mb-6 ${
-            isDarkMode ? "border-gray-800 bg-gray-900" : "border-gray-300 bg-gray-100"
-          }`}
-        >
-          <div
-            onClick={() => setSelectedTab("mentor")}
-            className={`${baseStyles} ${
-              selectedTab === "mentor" ? active : inactive
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <Users className="h-5 w-5" />
-              Mentor
-            </div>
-          </div>
-
-          <div
-            onClick={() => setSelectedTab("community")}
-            className={`${baseStyles} ${
-              selectedTab === "community" ? active : inactive
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              Community
-            </div>
-          </div>
-        </div>
-
-        {/* Section Content */}
-        <div className="mt-6">
-          {selectedTab === "mentor" ? (
-            <>
-              {/* Search Bar */}
-              <div className="flex items-center gap-2 mb-6">
-                <div className="relative w-full">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Search by name or field..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9ec6] ${
-                      isDarkMode
-                        ? "bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
-                        : "bg-white border-gray-300 text-black placeholder:text-gray-500"
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Mentor Cards */}
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {filteredMentors.length > 0 ? (
-                  filteredMentors.map((mentor) => (
-                    <MentorCard key={mentor.id} mentor={mentor} />
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">No mentors found.</p>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="text-gray-400">hello</div>
-          )}
-        </div>
       </div>
-    </div>
-  );
-}
 
-export default MenteeDashboard;
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Show mentor profile if selected */}
+        {selectedMentor ? (
+          <MentorProfile
+            mentor={selectedMentor}
+            onBack={handleBackToMentors}
+            isDarkMode={isDarkMode}
+            textClass={textClass}
+            mutedTextClass={mutedTextClass}
+            cardBgClass={cardBgClass}
+            borderClass={borderClass}
+          />
+        ) : (
+          <>
+            {/* Section Navigation */}
+            <div className="py-6">
+              <div
+                className={`inline-flex items-center p-1 ${cardBgClass} rounded-lg backdrop-blur-xl border ${borderClass}`}
+              >
+                <button
+                  onClick={() => setActiveSection("mentors")}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeSection === "mentors"
+                    ? "bg-[#ff9ec6] text-black shadow-sm"
+                    : `${mutedTextClass} hover:${textClass}`
+                    }`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Find Mentors</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection("feed")}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeSection === "feed"
+                    ? "bg-[#ff9ec6] text-black shadow-sm"
+                    : `${mutedTextClass} hover:${textClass}`
+                    }`}
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span>Community Feed</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section Content */}
+            <AnimatePresence mode="wait">
+              {activeSection === "mentors" && (
+                <motion.div
+                  key="mentors"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  {/* Search and Filter */}
+                  <SearchAndFilter
+                    searchQuery={searchQuery}
+                    onSearchChange={handleSearchChange}
+                    filters={filters}
+                    onFilterApply={handleFilterApply}
+                    isDarkMode={isDarkMode}
+                    textClass={textClass}
+                    mutedTextClass={mutedTextClass}
+                    cardBgClass={cardBgClass}
+                    borderClass={borderClass}
+                  />
+
+                  {/* Results count */}
+                  <div className="mb-6">
+                    <p className={`${mutedTextClass} text-sm`}>
+                      Showing {currentMentors.length} of {filteredMentors.length} mentors
+                      {searchQuery && ` for "${searchQuery}"`}
+                    </p>
+                  </div>
+
+                  {/* Mentor Grid */}
+                  {filteredMentors.length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className={`text-6xl mb-4 ${mutedTextClass}`}>🔍</div>
+                      <h3 className="text-2xl font-bold mb-2">No mentors found</h3>
+                      <p className={`${mutedTextClass} mb-6`}>Try adjusting your search or filter criteria</p>
+                      <Button
+                        onClick={() => {
+                          setSearchQuery("")
+                          setFilters({
+                            rating: 0,
+                            priceRange: [0, 100000],
+                            field: "",
+                            experience: "",
+                            availability: "",
+                          })
+                        }}
+                        className="bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 rounded-xl"
+                      >
+                        Clear All Filters
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                      {currentMentors.map((mentor, index) => (
+                        <MentorCard
+                          key={mentor.id}
+                          mentor={mentor}
+                          index={index}
+                          onSelect={handleMentorSelect}
+                          isDarkMode={isDarkMode}
+                          textClass={textClass}
+                          mutedTextClass={mutedTextClass}
+                          cardBgClass={cardBgClass}
+                          borderClass={borderClass}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-12">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className={`${isDarkMode
+                          ? "border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/50 text-[#ff9ec6] disabled:border-gray-700/50 disabled:text-gray-500"
+                          : "border-[#ff9ec6]/40 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/60 text-[#ff9ec6] disabled:border-gray-300/50 disabled:text-gray-400"
+                          } rounded-xl transition-all duration-200 disabled:hover:bg-transparent`}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+
+                      <div className="flex items-center space-x-2">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          const pageNum = i + 1
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`w-10 h-10 rounded-xl transition-all duration-200 ${currentPage === pageNum
+                                ? "bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 shadow-md"
+                                : isDarkMode
+                                  ? "border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/50 text-[#ff9ec6]"
+                                  : "border-[#ff9ec6]/40 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/60 text-[#ff9ec6]"
+                                }`}
+                            >
+                              {pageNum}
+                            </Button>
+                          )
+                        })}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className={`${isDarkMode
+                          ? "border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/50 text-[#ff9ec6] disabled:border-gray-700/50 disabled:text-gray-500"
+                          : "border-[#ff9ec6]/40 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/60 text-[#ff9ec6] disabled:border-gray-300/50 disabled:text-gray-400"
+                          } rounded-xl transition-all duration-200 disabled:hover:bg-transparent`}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {activeSection === "feed" && (
+                <motion.div
+                  key="feed"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <CommunityFeed
+                    posts={posts}
+                    setPosts={setPosts}
+                    profileData={profileData}
+                    isDarkMode={isDarkMode}
+                    textClass={textClass}
+                    mutedTextClass={mutedTextClass}
+                    cardBgClass={cardBgClass}
+                    borderClass={borderClass}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </div>
+      <Footer />
+    </div>
+  )
+}

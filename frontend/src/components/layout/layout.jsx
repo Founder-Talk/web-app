@@ -6,9 +6,9 @@ import Foot from '../common/foot/foot'
 function Layout() {
   return (
     <div>
-      <Nav/>
-      <Outlet/>
-      <Foot/>
+      <Nav />
+      <Outlet />
+      <Foot />
     </div>
   )
 }

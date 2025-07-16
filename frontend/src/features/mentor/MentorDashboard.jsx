@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { clearUser } from "@/redux/slice/userslice"
 import Nav from "@/components/common/nav/nav"
 import Analytics from "./Analytics"
+import Footer from '@/components/common/foot/foot'
 
 export default function MentorDashboard() {
  const isDarkMode = useSelector((state) => state.theme.mode === "light");
@@ -296,22 +297,7 @@ export default function MentorDashboard() {
       />
 
       {/* Footer */}
-      <footer className={`py-12 border-t ${isDarkMode ? "border-gray-900/50" : "border-gray-200/50"} mt-16`}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <Link
-              href="/"
-              className="text-2xl font-bold text-[#ff9ec6] mb-4 md:mb-0 hover:text-[#ff9ec6]/80 transition-colors"
-            >
-              Foundertalk
-            </Link>
-
-            <div className={`text-center md:text-right ${mutedTextClass} text-sm`}>
-              <p>© {new Date().getFullYear()} Foundertalk. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   )
 }

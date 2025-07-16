@@ -12,37 +12,37 @@ import AppInitializer from "./redux/reduxuser";
 function App() {
   return (
     <>
-    <AppInitializer/>
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/verify-otp" element={<VerifyOTPPage/>} />
-      <Route path="/chat" element={<Chat/>} />
-      <Route>
-        
-      </Route>
-      <Route
-       path="/dashboard/mentor"
-       element=
-       {
-         <PrivateRoute allowedRoles={['mentor']}>
-          <MentorDashboard />
-        </PrivateRoute>
-       }
-/>
+      <AppInitializer />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/verify-otp" element={<VerifyOTPPage />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route>
 
-<Route
-       path="/dashboard/mentee"
-       element={
-         <PrivateRoute allowedRoles={['mentee']}>
-      <MenteeDashboard />
-    </PrivateRoute>
-       }
-/>
+        </Route>
+        <Route
+          path="/dashboard/mentor"
+          element=
+          {
+            <PrivateRoute allowedRoles={['mentor']}>
+              <MentorDashboard />
+            </PrivateRoute>
+          }
+        />
 
-    </Routes>
-       </>
+        <Route
+          path="/dashboard/mentee"
+          element={
+            <PrivateRoute allowedRoles={['mentee']}>
+              <MenteeDashboard />
+            </PrivateRoute>
+          }
+        />
+
+      </Routes>
+    </>
   );
 }
 

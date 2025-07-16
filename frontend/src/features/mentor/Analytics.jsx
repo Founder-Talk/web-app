@@ -1,5 +1,3 @@
-"use client"
-
 import { motion } from "framer-motion"
 import { DollarSign, CheckCircle, Star, ArrowUpRight } from "lucide-react"
 import { useSelector } from "react-redux";
