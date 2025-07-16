@@ -6,15 +6,20 @@ import { Sun, Moon, Menu, LogOut, MessageCircle, User, ChevronDown } from "lucid
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "@/redux/slice/userslice";
+import Userprofile from "./userprofile";
+import ProfileSettings from "@/features/mentee/ProfileSettings";
 
 function Nav() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profile, setprofile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const isDarkMode = useSelector((state) => state.theme.mode === "light");
   const user = useSelector((state) => state.user.user);
   console.log(user);
+
+
   
 
   useEffect(() => {
@@ -27,6 +32,7 @@ function Nav() {
         isDarkMode ? "bg-black/80 border-gray-900/50" : "bg-white/80 border-gray-200/50"
       } border-b`}
     >
+      
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -91,6 +97,7 @@ function Nav() {
                             onClick={() => {
                               navigate("/profile");
                               setShowProfileDropdown(false);
+                              setprofile(!profile)
                             }}
                             className={`w-full px-4 py-3 text-left ${
                               isDarkMode ? "hover:bg-gray-800/50" : "hover:bg-gray-100/50"

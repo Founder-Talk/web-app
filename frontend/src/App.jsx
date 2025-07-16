@@ -9,6 +9,7 @@ import PrivateRoute from "./features/auth/PrivateRoute";
 import VerifyOTPPage from "./features/auth/OtpVerify";
 import Chat from './features/Chat/ChatWindow'
 import AppInitializer from "./redux/reduxuser";
+import Userprofile from "./components/common/nav/userprofile";
 function App() {
   return (
     <>
@@ -19,6 +20,8 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/profile" element={<Userprofile/>} />
+      
         <Route>
 
         </Route>

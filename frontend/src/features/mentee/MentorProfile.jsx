@@ -150,7 +150,7 @@ export default function MentorProfile({
             <span className={`text-sm ${mutedTextClass}`}>Response</span>
           </div>
           <p className="text-sm font-medium">
-            {mentor.responseTime.split(" ")[3]} {mentor.responseTime.split(" ")[4]}
+            {mentor.responseTime.trim(" ")[3]} {mentor.responseTime.split(" ")[4]}
           </p>
         </div>
 

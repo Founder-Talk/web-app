@@ -27,7 +27,7 @@ const interestOptions = [
   "Technology", "Legal", "Finance", "Business Development", "Customer Success", "Growth Hacking",
 ]
 
-export default function ProfileSettings({
+export default function MentorProfileSettings({
   profileData,
   onSave,
   isDarkMode = false,
@@ -40,7 +40,7 @@ export default function ProfileSettings({
 
   const textClass = isDarkMode ? "text-white" : "text-gray-900"
   const mutedTextClass = isDarkMode ? "text-gray-400" : "text-gray-600"
-  const cardBgClass = isDarkMode ? "bg-[#111111]" : "bg-white"
+  const cardBgClass = isDarkMode ? "bg-black" : "bg-white"
   const borderClass = isDarkMode ? "border-gray-700" : "border-gray-200"
 
   const handleInputChange = (field, value) => {
@@ -182,7 +182,7 @@ export default function ProfileSettings({
             />
           </div>
         </div>
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2 apace ">
           <Label htmlFor="industry" className={textClass}>Industry</Label>
           <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
             <SelectTrigger className={`${cardBgClass} ${borderClass} ${textClass}`}>
@@ -195,19 +195,45 @@ export default function ProfileSettings({
             </SelectContent>
           </Select>
         </div>
+        {/* Experience */}
+<div className="space-y-2 ">
+  <Label htmlFor="experience" className={textClass}>Experience</Label>
+  <Input
+    id="experience"
+    value={formData.experience}
+    onChange={(e) => handleInputChange("experience", e.target.value)}
+    className={`${cardBgClass} ${borderClass} ${textClass}`}
+    placeholder="e.g. 5 years in Product Management"
+  />
+</div>
+
       </div>
 
       {/* Bio */}
-      <div className="space-y-2 mb-6">
-        <Label htmlFor="bio" className={textClass}>Bio</Label>
-        <Textarea
-          id="bio"
-          value={formData.bio}
-          onChange={(e) => handleInputChange("bio", e.target.value)}
-          className={`min-h-[100px] ${cardBgClass} ${borderClass} ${textClass}`}
-          placeholder="Tell us about yourself and your goals..."
-        />
-      </div>
+ 
+<div className="space-y-2 mb-4">
+  <Label htmlFor="bio" className={textClass}>Short Bio</Label>
+  <Textarea
+    id="bio"
+    value={formData.bio}
+    onChange={(e) => handleInputChange("bio", e.target.value)}
+    className={`min-h-[70px] ${cardBgClass} ${borderClass} ${textClass}`}
+    placeholder="Quick summary about yourself..."
+  />
+</div>
+
+{/* About You */}
+<div className="space-y-2 mb-6">
+  <Label htmlFor="about" className={textClass}>About You</Label>
+  <Textarea
+    id="about"
+    value={formData.about || ""}
+    onChange={(e) => handleInputChange("about", e.target.value)}
+    className={`min-h-[180px] ${cardBgClass} ${borderClass} ${textClass}`}
+    placeholder="Tell your full story, experiences, vision, or what drives you..."
+  />
+</div>
+
 
       {/* Social Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -254,7 +280,7 @@ export default function ProfileSettings({
 
       {/* Interests */}
       <div className="space-y-4 mb-8">
-        <h3 className={`text-lg font-semibold ${textClass}`}>Areas of Interest</h3>
+        <h3 className={`text-lg font-semibold ${textClass}`}>Areas of expertise</h3>
         <div className="flex space-x-2">
           <Select value={newInterest} onValueChange={setNewInterest}>
             <SelectTrigger className={`flex-1 ${cardBgClass} ${borderClass} ${textClass}`}>

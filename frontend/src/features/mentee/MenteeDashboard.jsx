@@ -47,7 +47,7 @@ What I can help you with:
 • Exit strategies and M&A preparation`,
     rating: Math.floor(Math.random() * 2) + 4, // 4-5 stars
     price: Math.floor(Math.random() * 500) + 100, // $100-600
-    image: `/placeholder.svg?height=200&width=300&text=Mentor${i + 1}`,
+    image: null,
     profilePic: `/placeholder.svg?height=100&width=100&text=${String.fromCharCode(65 + (i % 26))}`,
     experience: `${Math.floor(Math.random() * 10) + 5}+ years`,
     companiesHelped: `${Math.floor(Math.random() * 200) + 50}+`,
@@ -372,8 +372,7 @@ What I can help you with:
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                 >
-                  <CommunityFeed
-                    posts={posts}
+                  <CommunityFeed posts={posts}
                     setPosts={setPosts}
                     profileData={profileData}
                     isDarkMode={isDarkMode}

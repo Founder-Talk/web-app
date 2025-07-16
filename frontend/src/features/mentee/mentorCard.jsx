@@ -1,12 +1,13 @@
 "use client"
 
+import { memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Star, MapPin, Clock, Users } from "lucide-react"
 import { motion } from "framer-motion"
 
 const StarRating = ({ rating, isDarkMode }) => {
   return (
-    <div className="flex space-x-1">
+    <div className="flex space-x-1" aria-label={`Rating: ${rating} out of 5`}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
@@ -19,7 +20,11 @@ const StarRating = ({ rating, isDarkMode }) => {
   )
 }
 
-export default function MentorCard({
+function getInitials(name = "") {
+  return name.charAt(0).toUpperCase()
+}
+
+function MentorCard({
   mentor,
   index,
   onSelect,
@@ -34,25 +39,30 @@ export default function MentorCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`${cardBgClass} ${borderClass} rounded-2xl border transition-all duration-300 overflow-hidden group cursor-pointer hover:shadow-lg ${
+      className={`${cardBgClass} ${borderClass} rounded-2xl border transition-all duration-300 overflow-hidden group cursor-pointer hover:shadow-lg transform group-hover:scale-[1.02] ${
         isDarkMode ? "hover:shadow-gray-900/20" : "hover:shadow-gray-200/40"
       } backdrop-blur-xl`}
       onClick={() => onSelect(mentor)}
+      role="button"
+      aria-label={`View profile of ${mentor.name}`}
     >
-      {/* Mentor Image */}
-      
-
       {/* Card Content */}
       <div className="p-4 sm:p-5">
         {/* Profile Section */}
         <div className="flex items-center space-x-3 mb-3">
-          <img
-            src={mentor.profilePic || "/placeholder.svg"}
-            alt={mentor.name}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#ff9ec6]/20 flex-shrink-0"
-          />
+          {mentor.image ? (
+            <img
+              src={mentor.image}
+              alt={mentor.name}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#ff9ec6]/20 flex-shrink-0 object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-[#ff9ec6]/20 border-2 border-[#ff9ec6]/20 text-[#ff9ec6] font-semibold text-sm sm:text-base">
+              {getInitials(mentor.name)}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-base sm:text-lg truncate">{mentor.name}</h3>
+            <h3 className="font-semibold text-base sm:text-lg truncate max-w-[80%]">{mentor.name}</h3>
             <p className="text-[#ff9ec6] text-sm font-medium truncate">{mentor.field}</p>
           </div>
         </div>
@@ -73,15 +83,15 @@ export default function MentorCard({
         <div className={`text-xs ${mutedTextClass} mb-4 space-y-1`}>
           <div className="flex items-center space-x-1">
             <MapPin className="h-3 w-3 text-[#ff9ec6] flex-shrink-0" />
-            <span className="truncate">{mentor.location}</span>
+            <span className="truncate">{mentor.location || "Not specified"}</span>
           </div>
           <div className="flex items-center space-x-1">
             <Clock className="h-3 w-3 text-[#ff9ec6] flex-shrink-0" />
-            <span className="truncate">{mentor.responseTime}</span>
+            <span className="truncate">{mentor.responseTime || "N/A"}</span>
           </div>
           <div className="flex items-center space-x-1">
             <Users className="h-3 w-3 text-[#ff9ec6] flex-shrink-0" />
-            <span className="truncate">{mentor.companiesHelped} mentees helped</span>
+            <span className="truncate">{mentor.companiesHelped || 0} mentees helped</span>
           </div>
         </div>
 
@@ -94,6 +104,7 @@ export default function MentorCard({
               e.stopPropagation()
               onSelect(mentor)
             }}
+            aria-label={`View full profile of ${mentor.name}`}
           >
             View Profile
           </Button>
@@ -102,3 +113,5 @@ export default function MentorCard({
     </motion.div>
   )
 }
+
+export default memo(MentorCard) // Prevent unnecessary re-renders
