@@ -14,6 +14,8 @@ function Nav() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const isDarkMode = useSelector((state) => state.theme.mode === "light");
   const user = useSelector((state) => state.user.user);
+  console.log(user);
+  
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
@@ -178,7 +180,7 @@ function Nav() {
                     </Link>
                   </div>
 
-                  {user ? (<div>
+                  {user ? (<div className=" flex gap-2">
                     <Button
                       onClick={() => {
                         navigate("/profile");
@@ -193,8 +195,8 @@ function Nav() {
                     </Button>
                     <Button
                       onClick={() => {
-                        navigate("/profile");
-                        setShowMobileMenu(false);
+                        dispatch(clearUser());
+                              navigate("/login");
                       }}
                       variant="outline"
                       size="sm"

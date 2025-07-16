@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from "react-redux"
 import { clearUser } from "@/redux/slice/userslice"
 import Nav from "@/components/common/nav/nav"
 import Analytics from "./Analytics"
-import Footer from '@/components/common/foot/foot'
 
 export default function MentorDashboard() {
  const isDarkMode = useSelector((state) => state.theme.mode === "light");
@@ -111,14 +110,6 @@ export default function MentorDashboard() {
   const textClass = isDarkMode ? "text-white" : "text-gray-900"
   const mutedTextClass = isDarkMode ? "text-gray-400" : "text-gray-600"
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
-
-  const handleLogout = () => {
-    console.log("Logging out...")
-    window.location.href = "/login"
-  }
 
   const handleProfileComplete = (data) => {
     console.log("Profile completed:", data)
@@ -132,82 +123,7 @@ export default function MentorDashboard() {
     role: "Mentor",
     field: "Tech Startup",
   }
-
-  // Analytics component with only 3 cards
-  // const Analytics = () => {
-  //   const analyticsData = [
-  //     {
-  //       id: "earnings",
-  //       title: "Total Earnings",
-  //       value: `₹${mentorStats.totalEarnings.toLocaleString()}`,
-  //       subtitle: `₹${mentorStats.monthlyEarnings.toLocaleString()} this month`,
-  //       icon: DollarSign,
-  //       color: "text-green-500",
-  //       bgColor: isDarkMode ? "bg-green-900/20" : "bg-green-100/50",
-  //     },
-  //     {
-  //       id: "sessions",
-  //       title: "Sessions Completed",
-  //       value: mentorStats.completedSessions.toString(),
-  //       subtitle: `${mentorStats.thisMonthSessions} this month`,
-  //       icon: CheckCircle,
-  //       color: "text-blue-500",
-  //       bgColor: isDarkMode ? "bg-blue-900/20" : "bg-blue-100/50",
-  //     },
-  //     {
-  //       id: "rating",
-  //       title: "Average Rating",
-  //       value: mentorStats.rating.toString(),
-  //       subtitle: `${mentorStats.totalReviews} reviews`,
-  //       icon: Star,
-  //       color: "text-yellow-500",
-  //       bgColor: isDarkMode ? "bg-yellow-900/20" : "bg-yellow-100/50",
-  //     },
-  //   ]
-
-  //   return (
-  //     <div className="space-y-4 sticky top-0">
-  //       <div className="mb-6">
-  //         <h2 className="text-xl font-bold mb-2 flex items-center space-x-2 ">
-  //           <div className={`p-2 rounded-lg ${isDarkMode ? "bg-gray-800/50" : "bg-gray-100/50"}`}>
-  //             <DollarSign className="h-5 w-5 text-[#ff9ec6]" />
-  //           </div>
-  //           <span>Analytics Overview</span>
-  //         </h2>
-  //         <p className={`${mutedTextClass} text-sm`}>Your mentoring performance at a glance</p>
-  //       </div>
-
-  //       <div className="grid grid-cols-1 gap-4 ">
-  //         {analyticsData.map((item, index) => {
-  //           const IconComponent = item.icon
-  //           return (
-  //             <motion.div
-  //               key={item.id}
-  //               initial={{ opacity: 0, y: 20 }}
-  //               animate={{ opacity: 1, y: 0 }}
-  //               transition={{ delay: index * 0.1 }}
-  //               className={`backdrop-blur-xl ${
-  //                 isDarkMode ? "bg-gray-900/60 border-gray-700/40" : "bg-white/80 border-gray-300/50"
-  //               } rounded-xl border shadow-lg p-4 hover:shadow-xl transition-all duration-300`}
-  //             >
-  //               <div className="flex items-center justify-between mb-3">
-  //                 <div className={`p-2 rounded-lg ${item.bgColor}`}>
-  //                   <IconComponent className={`h-5 w-5 ${item.color}`} />
-  //                 </div>
-  //               </div>
-  //               <div>
-  //                 <p className={`text-xs ${mutedTextClass} mb-1`}>{item.title}</p>
-  //                 <p className="text-xl font-bold mb-1">{item.value}</p>
-  //                 <p className={`text-xs ${mutedTextClass}`}>{item.subtitle}</p>
-  //               </div>
-  //             </motion.div>
-  //           )
-  //         })}
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
+  
   return (
     <div className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-300`}>
       {/* Header */}
@@ -297,7 +213,22 @@ export default function MentorDashboard() {
       />
 
       {/* Footer */}
-      <Footer/>
+      <footer className={`py-12 border-t ${isDarkMode ? "border-gray-900/50" : "border-gray-200/50"} mt-16`}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <Link
+              href="/"
+              className="text-2xl font-bold text-[#ff9ec6] mb-4 md:mb-0 hover:text-[#ff9ec6]/80 transition-colors"
+            >
+              Foundertalk
+            </Link>
+
+            <div className={`text-center md:text-right ${mutedTextClass} text-sm`}>
+              <p>© {new Date().getFullYear()} Foundertalk. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

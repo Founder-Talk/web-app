@@ -1,10 +1,12 @@
+"use client"
+
 import { motion } from "framer-motion"
 import { DollarSign, CheckCircle, Star, ArrowUpRight } from "lucide-react"
 import { useSelector } from "react-redux";
 
 
 export default function Analytics({ isDarkMode = useSelector((state) => state.theme.mode === "light")}) {
-
+const user= useSelector((state) => state.user.user)
 const analyticsData = [
   {
     id: "earnings",
@@ -14,27 +16,27 @@ const analyticsData = [
     icon: DollarSign,
     color: "green",
     growth: "10%",
-    bgColor: "bg-green-100/50", // or "bg-green-900/20" for dark
+    bgColor: "bg-black", // or "bg-green-900/20" for dark
   },
   {
     id: "sessions",
     title: "Sessions Completed",
-    value: "25",
+    value: `${user.totalSessions}`,
     subtitle: "5 this month",
     icon: CheckCircle,
     color: "blue",
     growth: "5/10",
-    bgColor: "bg-blue-100/50",
+    bgColor: "bg-black",
   },
   {
     id: "rating",
     title: "Average Rating",
-    value: "4.8",
+    value: `${user.rating}`,
     subtitle: "40 reviews",
     icon: Star,
     color: "yellow",
     growth: "90%",
-    bgColor: "bg-yellow-100/50",
+    bgColor: "bg-black",
   },
 ];
 
@@ -78,14 +80,14 @@ const analyticsData = [
                   <IconComponent className={`h-5 w-5 ${getColorClasses(item.color)}`} />
                 </div>
                 <div className={`flex items-center space-x-1 ${getColorClasses(item.color)}`}>
-                  {item.id === "earnings" && <ArrowUpRight className="h-3 w-3" />}
-                  <span className="text-xs font-medium">{item.growth}</span>
+                  {/* {item.id === "earnings" && <ArrowUpRight className="h-3 w-3" />} */}
+                  
                 </div>
               </div>
               <div>
                 <p className={`text-xs  mb-1`}>{item.title}</p>
                 <p className="text-xl font-bold mb-1">{item.value}</p>
-                <p className={`text-xs `}>{item.subtitle}</p>
+                
               </div>
             </motion.div>
           )
