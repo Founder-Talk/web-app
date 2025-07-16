@@ -8,7 +8,10 @@ const {
     getMentorPosts,
     getPostById,
     updatePost,
-    deletePost
+    deletePost,
+    likePost,
+    unlikePost,
+    addComment
 } = require('../controllers/postController');
 
 // Create a post (with image upload)
@@ -28,5 +31,12 @@ router.put('/:id', authMiddleware, upload.single('post'), updatePost);
 
 // Delete a post
 router.delete('/:id', authMiddleware, deletePost);
+
+// Like a post
+router.post('/:id/like', authMiddleware, likePost);
+// Unlike a post
+router.post('/:id/unlike', authMiddleware, unlikePost);
+// Add a comment to a post
+router.post('/:id/comment', authMiddleware, addComment);
 
 module.exports = router; 

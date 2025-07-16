@@ -92,11 +92,67 @@ const deletePost = async (req, res) => {
     }
 };
 
+// Like a post
+const likePost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        if (post.likes.includes(req.user.id)) {
+            return res.status(400).json({ message: 'You have already liked this post.' });
+        }
+        post.likes.push(req.user.id);
+        await post.save();
+        res.status(200).json({ message: 'Post liked successfully', likes: post.likes.length });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Unlike a post
+const unlikePost = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        const index = post.likes.indexOf(req.user.id);
+        if (index === -1) {
+            return res.status(400).json({ message: 'You have not liked this post.' });
+        }
+        post.likes.splice(index, 1);
+        await post.save();
+        res.status(200).json({ message: 'Post unliked successfully', likes: post.likes.length });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Add a comment to a post
+const addComment = async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) return res.status(400).json({ message: 'Comment text is required.' });
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        const comment = {
+            user: req.user.id,
+            text,
+            createdAt: new Date()
+        };
+        post.comments.push(comment);
+        await post.save();
+        res.status(201).json({ message: 'Comment added successfully', comments: post.comments });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     createPost,
     getAllPosts,
     getMentorPosts,
     getPostById,
     updatePost,
-    deletePost
+    deletePost,
+    likePost,
+    unlikePost,
+    addComment
 }; 
