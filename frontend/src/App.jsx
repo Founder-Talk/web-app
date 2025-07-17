@@ -10,6 +10,7 @@ import VerifyOTPPage from "./features/auth/OtpVerify";
 import Chat from './features/Chat/ChatWindow'
 import AppInitializer from "./redux/reduxuser";
 import Userprofile from "./components/common/nav/userprofile";
+import MentorProfile from './features/mentee/MentorProfile';
 function App() {
   return (
     <>
@@ -21,6 +22,7 @@ function App() {
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Userprofile/>} />
+        <Route path="/mentors/:mentorId" element={<MentorProfile />} />
       
         <Route>
 

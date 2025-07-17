@@ -209,7 +209,8 @@ const updateUserProfile = async (req, res) => {
                     startTime: z.string(),
                     endTime: z.string()
                 }))
-            })).optional()
+            })).optional(),
+            isProfileComplete: z.boolean().optional()
         }).strict();
 
         const { success, data, error } = schema.safeParse(req.body);

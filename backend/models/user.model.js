@@ -73,6 +73,17 @@ const userSchema = new mongoose.Schema(
       type: Number,
       min: [0, "Hourly rate cannot be negative"]
     },
+    // New fields for session charge and total earning
+    sessionCharge: {
+      type: Number,
+      min: [0, "Session charge cannot be negative"],
+      default: 0
+    },
+    totalEarning: {
+      type: Number,
+      min: [0, "Total earning cannot be negative"],
+      default: 0
+    },
     availability: [{
       day: {
         type: String,
@@ -109,7 +120,12 @@ const userSchema = new mongoose.Schema(
       default: false
     },
     emailVerificationOTP: String, // 6-digit OTP
-    emailVerificationExpires: Date
+    emailVerificationExpires: Date,
+    // Indicates if the user has completed their profile
+    isProfileComplete: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true // Add createdAt & updatedAt

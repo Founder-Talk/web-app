@@ -73,11 +73,14 @@ export default function MentorProfileSettings({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  // Use a consistent field for expertise/interests
+  const expertiseList = formData.domainExpertise || formData.areasOfInterest || formData.interests || [];
+
   const handleAddInterest = (interest) => {
-    if (interest && !formData.interests.includes(interest)) {
+    if (interest && !expertiseList.includes(interest)) {
       setFormData((prev) => ({
         ...prev,
-        interests: [...prev.interests, interest],
+        domainExpertise: [...expertiseList, interest],
       }))
     }
     setNewInterest("")
@@ -86,7 +89,7 @@ export default function MentorProfileSettings({
   const handleRemoveInterest = (interestToRemove) => {
     setFormData((prev) => ({
       ...prev,
-      interests: prev.interests.filter((interest) => interest !== interestToRemove),
+      domainExpertise: expertiseList.filter((interest) => interest !== interestToRemove),
     }))
   }
 
@@ -107,6 +110,7 @@ export default function MentorProfileSettings({
   const handleSave = async () => {
     setIsLoading(true);
     const sanitizedData = sanitizeProfileData(formData);
+    sanitizedData.isProfileComplete = true;
     try {
       const token = localStorage.getItem("token");
       await axios.put(
@@ -323,7 +327,7 @@ export default function MentorProfileSettings({
             </SelectTrigger>
             <SelectContent className={`${cardBgClass} ${borderClass} ${textClass}`}>
               {interestOptions
-                .filter((option) => !formData.interests.includes(option))
+                .filter((option) => !expertiseList.includes(option))
                 .map((option) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
@@ -340,7 +344,7 @@ export default function MentorProfileSettings({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(formData.interests || formData.areasOfInterest || []).map((interest) => (
+          {expertiseList.map((interest) => (
             <motion.div key={interest} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Badge variant="secondary" className="bg-[#ff9ec6]/20 text-[#ff9ec6] border-[#ff9ec6]/30 pr-1">
                 {interest}

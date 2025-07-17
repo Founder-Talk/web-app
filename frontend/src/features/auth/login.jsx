@@ -30,14 +30,22 @@ export default function LoginPage() {
     })
   }
   useEffect(() => {
-  if (user) {
-    if (user.role === "mentee") {
-      navigate("/dashboard/mentee");
-    } else if (user.role === "mentor") {
-      navigate("/dashboard/mentor");
+    if (user) {
+      if (!user.isProfileComplete) {
+        if (user.role === "mentee") {
+          navigate("/profile");
+        } else if (user.role === "mentor") {
+          navigate("/profile");
+        }
+      } else {
+        if (user.role === "mentee") {
+          navigate("/dashboard/mentee");
+        } else if (user.role === "mentor") {
+          navigate("/dashboard/mentor");
+        }
+      }
     }
-  }
-}, [user, navigate]);
+  }, [user, navigate]);
 
 
 const handleSubmit = async (e) => {

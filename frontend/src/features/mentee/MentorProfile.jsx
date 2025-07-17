@@ -47,6 +47,9 @@ export default function MentorProfile({
   cardBgClass,
   borderClass,
 }) {
+  if (!mentor) {
+    return <div className="text-center py-12">Loading mentor profile...</div>;
+  }
   const [activeTab, setActiveTab] = useState("about")
   const [showChatModal, setShowChatModal] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
@@ -170,7 +173,11 @@ export default function MentorProfile({
             <span className={`text-sm ${mutedTextClass}`}>Response</span>
           </div>
           <p className="text-sm font-medium">
-            {mentor.responseTime.trim(" ")[3]} {mentor.responseTime.split(" ")[4]}
+            {typeof mentor.responseTime === 'string' && mentor.responseTime.trim() ? (
+              `${mentor.responseTime.trim().split(' ')[3] || ''} ${mentor.responseTime.trim().split(' ')[4] || ''}`
+            ) : (
+              'N/A'
+            )}
           </p>
         </div>
 
@@ -219,7 +226,7 @@ export default function MentorProfile({
             <div className={`${cardBgClass} ${borderClass} p-6 rounded-xl border`}>
               <h3 className="text-xl font-bold mb-4">About {mentor.name}</h3>
               <div className="prose prose-gray max-w-none">
-                {mentor.fullDescription.split("\n").map((paragraph, index) => (
+                {(mentor.fullDescription || "").split("\n").map((paragraph, index) => (
                   <p key={index} className={`${mutedTextClass} mb-4 leading-relaxed`}>
                     {paragraph}
                   </p>
@@ -231,7 +238,7 @@ export default function MentorProfile({
             <div className={`${cardBgClass} ${borderClass} p-6 rounded-xl border`}>
               <h3 className="text-xl font-bold mb-4">Areas of Expertise</h3>
               <div className="flex flex-wrap gap-2">
-                {mentor.expertise.map((skill, index) => (
+                {(mentor.expertise || []).map((skill, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-[#ff9ec6]/10 text-[#ff9ec6] rounded-full text-sm font-medium border border-[#ff9ec6]/20"
@@ -246,7 +253,7 @@ export default function MentorProfile({
             <div className={`${cardBgClass} ${borderClass} p-6 rounded-xl border`}>
               <h3 className="text-xl font-bold mb-4">Languages</h3>
               <div className="flex flex-wrap gap-4">
-                {mentor.languages.map((language, index) => (
+                {(mentor.languages || []).map((language, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <Globe className="h-4 w-4 text-[#ff9ec6]" />
                     <span className={`${mutedTextClass}`}>{language}</span>
@@ -265,7 +272,7 @@ export default function MentorProfile({
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {mentor.posts.map((post) => (
+            {(mentor.posts || []).map((post) => (
               <div key={post.id} className={`${cardBgClass} ${borderClass} p-6 rounded-xl border`}>
                 <div className="flex items-start space-x-4">
                   <img

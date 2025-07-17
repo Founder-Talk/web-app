@@ -107,6 +107,7 @@ export default function ProfileSettings({
   const handleSave = async () => {
     setIsLoading(true);;
     const sanitizedData = sanitizeProfileData(formData);
+    sanitizedData.isProfileComplete = true;
     try {
       const token = localStorage.getItem("token");
       await axios.put(
@@ -120,6 +121,7 @@ export default function ProfileSettings({
       });
       setFormData(res.data);
       alert("Profile updated successfully!");
+      navigate("/login");
     } catch (err) {
       alert("Failed to update profile. " + (err?.response?.data?.message || err.message));
     } finally {

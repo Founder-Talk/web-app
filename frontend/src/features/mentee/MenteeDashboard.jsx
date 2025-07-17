@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Users, BookOpen } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom";
 
 // Components
 import MentorCard from "./mentorCard"
@@ -16,9 +17,6 @@ import Footer from '@/components/common/foot/foot'
 export default function MenteeDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [activeSection, setActiveSection] = useState("mentors")
-  const [selectedMentor, setSelectedMentor] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchQuery, setSearchQuery] = useState("")
   const profileData = useSelector((state) => state.user.user)
   const [filters, setFilters] = useState({
     rating: 0,
@@ -30,16 +28,20 @@ export default function MenteeDashboard() {
   const [mentors, setMentors] = useState([])
   const [loadingMentors, setLoadingMentors] = useState(true)
   const [mentorError, setMentorError] = useState("")
+  const [posts, setPosts] = useState([])
+  const [loadingPosts, setLoadingPosts] = useState(true)
+  const [postsError, setPostsError] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMentor, setSelectedMentor] = useState(null);
+  const navigate = useNavigate();
 
-<<<<<<< HEAD
   useEffect(() => {
     const fetchMentors = async () => {
       setLoadingMentors(true)
       setMentorError("")
       try {
         const res = await axios.get("http://localhost:3000/user/mentors", { params: { limit: 100 } })
-        console.log(res.data);
-        
         setMentors(res.data.mentors)
       } catch (err) {
         setMentorError("Failed to load mentors.")
@@ -50,53 +52,43 @@ export default function MenteeDashboard() {
     fetchMentors()
   }, [])
 
-  // Mock community posts
-=======
-  const mentorData = useMemo(() =>
-    Array.from({ length: 36 }, (_, i) => ({
-      id: i + 1,
-      name: `Mentor ${i + 1}`,
-      field: ["Tech Startup", "E-commerce", "SaaS", "FinTech", "HealthTech"][i % 5],
-      caption: "Helping founders scale their startups with proven strategies and insights.",
-      fullDescription: `I'm a seasoned entrepreneur with over ${5 + (i % 10)} years of experience...`,
-      rating: Math.floor(Math.random() * 2) + 4,
-      price: Math.floor(Math.random() * 500) + 100,
-      image: null,
-      profilePic: `/placeholder.svg?height=100&width=100&text=${String.fromCharCode(65 + (i % 26))}`,
-      experience: `${Math.floor(Math.random() * 10) + 5}+ years`,
-      companiesHelped: `${Math.floor(Math.random() * 200) + 50}+`,
-      successRate: `${Math.floor(Math.random() * 10) + 90}%`,
-      location: ["San Francisco", "NYC", "London", "Berlin", "Singapore"][i % 5],
-      languages: ["English", "Spanish", "French"].slice(0, Math.floor(Math.random() * 3) + 1),
-      responseTime: ["Within 1 hour", "Within 2 hours", "Within 4 hours"][i % 3],
-      totalSessions: Math.floor(Math.random() * 500) + 100,
-      expertise: ["Product Dev", "Fundraising", "Go-to-Market", "Team Building", "Partnerships"].slice(0, Math.floor(Math.random() * 3) + 2),
-      availability: ["Available now", "Available this week", "Booking 1 week ahead"][i % 3],
-      posts: []
-    })), [])
-
->>>>>>> b40448bbde93a46d9ae64347523755cd6cacd8d4
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: { name: "Sarah Chen", avatar: "/placeholder.svg?text=SC", role: "Mentor", field: "Tech Startup" },
-      content: "Just helped another startup raise their Series A!",
-      image: "/placeholder.svg?text=Series+A+Tips",
-      likes: 24,
-      comments: [],
-      timestamp: "2 hours ago",
-      liked: false,
-    },
-    {
-      id: 2,
-      author: { name: "Marcus R.", avatar: "/placeholder.svg?text=MR", role: "Mentor", field: "E-commerce" },
-      content: "5 key metrics every e-commerce founder should track...",
-      likes: 42,
-      comments: [],
-      timestamp: "1 day ago",
-      liked: false,
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoadingPosts(true)
+      setPostsError("")
+      try {
+        const res = await axios.get("http://localhost:3000/posts")
+        // Transform posts here:
+        const mappedPosts = (res.data || []).map(post => ({
+          id: post._id,
+          author: {
+            name: post.user?.name || "Unknown",
+            avatar: post.user?.profilePic || "/placeholder.svg",
+            role: post.user?.role || "Mentee",
+            field: post.user?.field || "",
+          },
+          content: post.content,
+          image: post.post,
+          likes: post.likes?.length || 0,
+          liked: false, // You can set this based on current user
+          comments: (post.comments || []).map((c, i) => ({
+            id: i + 1,
+            author: c.name,
+            avatar: c.profilePic || "/placeholder.svg",
+            content: c.text,
+            timestamp: c.createdAt ? new Date(c.createdAt).toLocaleString() : "",
+          })),
+          timestamp: post.createdAt ? new Date(post.createdAt).toLocaleString() : "",
+        }))
+        setPosts(mappedPosts)
+      } catch (err) {
+        setPostsError("Failed to load community posts.")
+      } finally {
+        setLoadingPosts(false)
+      }
     }
-  ])
+    fetchPosts()
+  }, [])
 
   const bgClass = isDarkMode ? "bg-gray-950" : "bg-gray-50"
   const textClass = isDarkMode ? "text-white" : "text-gray-900"
@@ -105,17 +97,11 @@ export default function MenteeDashboard() {
   const borderClass = isDarkMode ? "border-gray-800/50" : "border-gray-200/50"
 
   const filteredMentors = useMemo(() => {
-<<<<<<< HEAD
     return (mentors || []).filter((mentor) => {
       const matchesSearch =
         mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (mentor.bio || "").toLowerCase().includes(searchQuery.toLowerCase())
 
-=======
-    return mentorData.filter((mentor) => {
-      const matchesSearch = mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mentor.field.toLowerCase().includes(searchQuery.toLowerCase())
->>>>>>> b40448bbde93a46d9ae64347523755cd6cacd8d4
       const matchesRating = filters.rating === 0 || mentor.rating >= filters.rating
       const matchesPrice = (!mentor.hourlyRate || (mentor.hourlyRate >= filters.priceRange[0] && mentor.hourlyRate <= filters.priceRange[1]))
       const matchesField = !filters.field || (mentor.domainExpertise && mentor.domainExpertise.includes(filters.field))
@@ -140,13 +126,6 @@ export default function MenteeDashboard() {
       </div>
 
       {/* Main Content */}
-<<<<<<< HEAD
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {loadingMentors ? (
-          <div className="text-center py-8">Loading mentors...</div>
-        ) : mentorError ? (
-          <div className="text-center py-8 text-red-500">{mentorError}</div>
-=======
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
         {selectedMentor ? (
           <MentorProfile
@@ -158,7 +137,6 @@ export default function MenteeDashboard() {
             cardBgClass={cardBgClass}
             borderClass={borderClass}
           />
->>>>>>> b40448bbde93a46d9ae64347523755cd6cacd8d4
         ) : (
           <>
             {/* Tab Navigation */}
@@ -222,67 +200,14 @@ export default function MenteeDashboard() {
                       </Button>
                     </div>
                   ) : (
-<<<<<<< HEAD
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                      {currentMentors.map((mentor, index) => (
-                        <MentorCard
-                          key={mentor._id || mentor.id || index}
-                          mentor={mentor}
-                          index={index}
-                          onSelect={handleMentorSelect}
-                          isDarkMode={isDarkMode}
-                          textClass={textClass}
-                          mutedTextClass={mutedTextClass}
-                          cardBgClass={cardBgClass}
-                          borderClass={borderClass}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-12">
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className={`${isDarkMode
-                          ? "border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/50 text-[#ff9ec6] disabled:border-gray-700/50 disabled:text-gray-500"
-                          : "border-[#ff9ec6]/40 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/60 text-[#ff9ec6] disabled:border-gray-300/50 disabled:text-gray-400"
-                          } rounded-xl transition-all duration-200 disabled:hover:bg-transparent`}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-
-                      <div className="flex items-center space-x-2">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          const pageNum = i + 1
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={currentPage === pageNum ? "default" : "outline"}
-                              onClick={() => setCurrentPage(pageNum)}
-                              className={`w-10 h-10 rounded-xl transition-all duration-200 ${currentPage === pageNum
-                                ? "bg-[#ff9ec6] text-black hover:bg-[#ff9ec6]/90 shadow-md"
-                                : isDarkMode
-                                  ? "border-[#ff9ec6]/30 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/50 text-[#ff9ec6]"
-                                  : "border-[#ff9ec6]/40 hover:bg-[#ff9ec6]/10 hover:border-[#ff9ec6]/60 text-[#ff9ec6]"
-                                }`}
-                            >
-                              {pageNum}
-                            </Button>
-                          )
-                        })}
-=======
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {currentMentors.map((mentor) => (
+                        {currentMentors.map((mentor, index) => (
                           <MentorCard
-                            key={mentor.id}
+                            key={mentor._id || mentor.id || index}
                             mentor={mentor}
-                            onSelect={setSelectedMentor}
+                            index={index}
+                            onSelect={() => setSelectedMentor(mentor)}
                             isDarkMode={isDarkMode}
                             textClass={textClass}
                             mutedTextClass={mutedTextClass}
@@ -290,7 +215,6 @@ export default function MenteeDashboard() {
                             borderClass={borderClass}
                           />
                         ))}
->>>>>>> b40448bbde93a46d9ae64347523755cd6cacd8d4
                       </div>
 
                       {/* Pagination */}
@@ -328,16 +252,22 @@ export default function MenteeDashboard() {
 
               {activeSection === "feed" && (
                 <motion.div key="feed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <CommunityFeed
-                    posts={posts}
-                    setPosts={setPosts}
-                    profileData={profileData}
-                    isDarkMode={isDarkMode}
-                    textClass={textClass}
-                    mutedTextClass={mutedTextClass}
-                    cardBgClass={cardBgClass}
-                    borderClass={borderClass}
-                  />
+                  {loadingPosts ? (
+                    <div className="text-center py-8">Loading community posts...</div>
+                  ) : postsError ? (
+                    <div className="text-center py-8 text-red-500">{postsError}</div>
+                  ) : (
+                    <CommunityFeed
+                      posts={posts}
+                      setPosts={setPosts}
+                      profileData={profileData}
+                      isDarkMode={isDarkMode}
+                      textClass={textClass}
+                      mutedTextClass={mutedTextClass}
+                      cardBgClass={cardBgClass}
+                      borderClass={borderClass}
+                    />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
