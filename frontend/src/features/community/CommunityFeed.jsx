@@ -1,28 +1,40 @@
 "use client"
 
 import { useState } from "react"
+import { useSelector } from "react-redux"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { BookOpen, ImageIcon, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import FeedPost from "./FeedPost"
 
-export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode, textClass, mutedTextClass }) {
+export default function CommunityFeed({ posts, setPosts, isDarkMode, textClass, mutedTextClass }) {
+  const user = useSelector((state) => state.user.user)
+
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [newPost, setNewPost] = useState({
     content: "",
     image: null,
   })
 
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-xl font-semibold mb-2">Loading Community Feed...</h3>
+        <p className={`${mutedTextClass}`}>Please wait while we load your profile.</p>
+      </div>
+    )
+  }
+
   const handleCreatePost = () => {
     if (newPost.content.trim()) {
       const post = {
         id: posts.length + 1,
         author: {
-          name: currentUser.name,
-          avatar: currentUser.avatar || "/placeholder.svg?height=40&width=40&text=CU",
-          role: currentUser.role || "Mentor",
-          field: currentUser.field || "Tech Startup",
+          name: user.name,
+          avatar: user.avatar || "/placeholder.svg?height=40&width=40&text=CU",
+          role: user.role || "Mentor",
+          field: user.field || "Tech Startup",
         },
         content: newPost.content,
         image: newPost.image,
@@ -71,12 +83,12 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
         <h2 className="text-xl md:text-2xl font-bold mb-2 flex items-center space-x-2">
           <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-[#ff9ec6]" />
           <span>Community Feed</span>
-          {currentUser.role === "Mentor" && (
+          {user.role === "Mentor" && (
             <span className="px-2 py-1 rounded-full bg-[#ff9ec6]/20 text-[#ff9ec6] text-xs font-medium">Required</span>
           )}
         </h2>
         <p className={`${mutedTextClass} text-sm md:text-base`}>
-          {currentUser.role === "Mentor"
+          {user.role === "Mentor"
             ? "Share your expertise and engage with the community to build your reputation and attract more mentees."
             : "Connect with mentors and fellow entrepreneurs. Share your journey and learn from others."}
         </p>
@@ -90,7 +102,7 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
       >
         <div className="flex space-x-3 md:space-x-4">
           <img
-            src={currentUser.avatar || "/placeholder.svg?height=48&width=48&text=CU"}
+            src={user.avatar || "/placeholder.svg?height=48&width=48&text=CU"}
             alt="Your avatar"
             className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#ff9ec6]/20 flex-shrink-0"
           />
@@ -104,7 +116,7 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
               }`}
             >
               <p className={`${mutedTextClass} text-base md:text-lg`}>
-                {currentUser.role === "Mentor"
+                {user.role === "Mentor"
                   ? "Share your expertise, insights, or startup tips with the community..."
                   : "What's happening in your startup journey? Share your thoughts..."}
               </p>
@@ -120,7 +132,7 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
                 >
                   <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
-                {currentUser.role === "Mentor" && (
+                {user.role === "Mentor" && (
                   <span className={`text-xs md:text-sm ${mutedTextClass} hidden sm:block`}>
                     💡 Tip: Regular posting increases your visibility by 3x
                   </span>
@@ -202,13 +214,13 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <img
-                      src={currentUser.avatar || "/placeholder.svg?height=40&width=40&text=CU"}
+                      src={user.avatar || "/placeholder.svg?height=40&width=40&text=CU"}
                       alt="Your avatar"
                       className="w-10 h-10 rounded-full border-2 border-[#ff9ec6]/20"
                     />
                     <div>
-                      <h4 className="font-semibold">{currentUser.name}</h4>
-                      <p className={`text-sm ${mutedTextClass}`}>{currentUser.role}</p>
+                      <h4 className="font-semibold">{user.name}</h4>
+                      <p className={`text-sm ${mutedTextClass}`}>{user.role}</p>
                     </div>
                   </div>
 
@@ -216,7 +228,7 @@ export default function CommunityFeed({ posts, setPosts, currentUser, isDarkMode
                     value={newPost.content}
                     onChange={(e) => setNewPost((prev) => ({ ...prev, content: e.target.value }))}
                     placeholder={
-                      currentUser.role === "Mentor"
+                      user.role === "Mentor"
                         ? "What insights would you like to share with the community? Tips, experiences, or advice for fellow entrepreneurs..."
                         : "What's on your mind? Share your startup journey, ask questions, or celebrate wins!"
                     }

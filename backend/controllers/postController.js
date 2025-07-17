@@ -132,8 +132,12 @@ const addComment = async (req, res) => {
         if (!text) return res.status(400).json({ message: 'Comment text is required.' });
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const user = await User.findById(req.user.id);
+
         const comment = {
-            user: req.user.id,
+            name: user.name,
+            profilePic: user.profilePic,
             text,
             createdAt: new Date()
         };
