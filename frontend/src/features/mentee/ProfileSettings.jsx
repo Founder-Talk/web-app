@@ -17,6 +17,8 @@ import {
   User, Camera, X, Plus, Globe, Linkedin, Twitter, Building, Briefcase
 } from "lucide-react"
 
+import axios from "axios";
+
 const industries = [
   "Technology", "Healthcare", "Finance", "E-commerce", "Education", "Manufacturing", "Real Estate",
   "Media & Entertainment", "Food & Beverage", "Transportation", "Energy", "Other",
@@ -26,6 +28,30 @@ const interestOptions = [
   "Product Strategy", "Fundraising", "Team Building", "Marketing", "Sales", "Operations",
   "Technology", "Legal", "Finance", "Business Development", "Customer Success", "Growth Hacking",
 ]
+
+function sanitizeProfileData(data) {
+  const allowedFields = [
+    'name', 'bio', 'education', 'goals', 'areasOfInterest', 'company', 'experience', 'profilePic',
+    'domainExpertise', 'linkedinProfile', 'hourlyRate', 'availability'
+  ];
+  const sanitized = {};
+  for (const key of allowedFields) {
+    if (data[key] !== undefined && data[key] !== null && data[key] !== "") {
+      if (key === 'experience' || key === 'hourlyRate') {
+        sanitized[key] = Number(data[key]);
+        if (isNaN(sanitized[key])) delete sanitized[key];
+      } else if (key === 'profilePic') {
+        // Only send if it's a URL (not a data URI)
+        if (typeof data[key] === 'string' && !data[key].startsWith('data:image/')) {
+          sanitized[key] = data[key];
+        }
+      } else {
+        sanitized[key] = data[key];
+      }
+    }
+  }
+  return sanitized;
+}
 
 export default function ProfileSettings({
   profileData,
@@ -71,7 +97,7 @@ export default function ProfileSettings({
       reader.onload = (e) => {
         setFormData((prev) => ({
           ...prev,
-          profilePic: e.target.result,
+          profilePic: e.target.result || null,
         }))
       }
       reader.readAsDataURL(file)
@@ -79,18 +105,26 @@ export default function ProfileSettings({
   }
 
   const handleSave = async () => {
-    setIsLoading(true)
-     const ab =  ()=> {
-      setTimeout(() => {
-      console.log(hello);
-      navigate("login")
-      }, 5000);
-      ab()
-      setIsLoading(false)
-
+    setIsLoading(true);;
+    const sanitizedData = sanitizeProfileData(formData);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        "http://localhost:3000/user/profile",
+        sanitizedData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Fetch latest profile data and update state
+      const res = await axios.get("http://localhost:3000/user/profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFormData(res.data);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      alert("Failed to update profile. " + (err?.response?.data?.message || err.message));
+    } finally {
+      setIsLoading(false);
     }
-      
-    navigate("/login")
   }
 
   return (

@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Users, BookOpen } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -25,52 +26,27 @@ export default function MenteeDashboard() {
     experience: "",
     availability: "",
   })
+  const [mentors, setMentors] = useState([])
+  const [loadingMentors, setLoadingMentors] = useState(true)
+  const [mentorError, setMentorError] = useState("")
 
-
-
-  // Mock mentor data
-  const mentorData = Array.from({ length: 36 }, (_, i) => ({
-    id: i + 1,
-    name: `Mentor ${i + 1}`,
-    field: ["Tech Startup", "E-commerce", "SaaS", "FinTech", "HealthTech"][i % 5],
-    caption: "Helping founders scale their startups with proven strategies and insights.",
-    fullDescription: `I'm a seasoned entrepreneur with over ${5 + (i % 10)} years of experience in building and scaling startups. I've successfully founded ${1 + (i % 3)} companies, with my latest venture being acquired by a Fortune 500 company.
-
-My expertise spans across product development, go-to-market strategies, fundraising, and team building. I've helped over ${50 + i * 10}+ founders navigate the challenging startup journey, from ideation to IPO.
-
-What I can help you with:
-• Product-market fit validation
-• Fundraising strategies and investor relations
-• Scaling operations and team building
-• Go-to-market planning and execution
-• Strategic partnerships and business development
-• Exit strategies and M&A preparation`,
-    rating: Math.floor(Math.random() * 2) + 4, // 4-5 stars
-    price: Math.floor(Math.random() * 500) + 100, // $100-600
-    image: null,
-    profilePic: `/placeholder.svg?height=100&width=100&text=${String.fromCharCode(65 + (i % 26))}`,
-    experience: `${Math.floor(Math.random() * 10) + 5}+ years`,
-    companiesHelped: `${Math.floor(Math.random() * 200) + 50}+`,
-    successRate: `${Math.floor(Math.random() * 10) + 90}%`,
-    location: ["San Francisco, CA", "New York, NY", "London, UK", "Berlin, Germany", "Singapore"][i % 5],
-    languages: ["English", "Spanish", "French", "German", "Mandarin"].slice(0, Math.floor(Math.random() * 3) + 1),
-    responseTime: ["Within 1 hour", "Within 2 hours", "Within 4 hours"][i % 3],
-    totalSessions: Math.floor(Math.random() * 500) + 100,
-    expertise: ["Product Development", "Fundraising", "Team Building", "Go-to-Market", "Strategic Partnerships"].slice(
-      0,
-      Math.floor(Math.random() * 3) + 2,
-    ),
-    availability: ["Available now", "Available this week", "Booking 1 week ahead"][i % 3],
-    posts: [
-      {
-        id: 1,
-        content: `Just helped another startup raise their Series A! 🚀 Key lesson: Focus on your unit economics and show clear path to profitability.`,
-        likes: Math.floor(Math.random() * 50) + 10,
-        comments: [],
-        timestamp: "2 hours ago",
-      },
-    ],
-  }))
+  useEffect(() => {
+    const fetchMentors = async () => {
+      setLoadingMentors(true)
+      setMentorError("")
+      try {
+        const res = await axios.get("http://localhost:3000/user/mentors", { params: { limit: 100 } })
+        console.log(res.data);
+        
+        setMentors(res.data.mentors)
+      } catch (err) {
+        setMentorError("Failed to load mentors.")
+      } finally {
+        setLoadingMentors(false)
+      }
+    }
+    fetchMentors()
+  }, [])
 
   // Mock community posts
   const [posts, setPosts] = useState([
@@ -146,20 +122,19 @@ What I can help you with:
 
   // Filter mentors based on search query and filters
   const filteredMentors = useMemo(() => {
-    return mentorData.filter((mentor) => {
+    return (mentors || []).filter((mentor) => {
       const matchesSearch =
         mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mentor.field.toLowerCase().includes(searchQuery.toLowerCase())
+        (mentor.bio || "").toLowerCase().includes(searchQuery.toLowerCase())
 
       const matchesRating = filters.rating === 0 || mentor.rating >= filters.rating
-      const matchesPrice = mentor.price >= filters.priceRange[0] && mentor.price <= filters.priceRange[1]
-      const matchesField = !filters.field || mentor.field === filters.field
-      const matchesExperience = !filters.experience || mentor.experience.includes(filters.experience)
-      const matchesAvailability = !filters.availability || mentor.availability === filters.availability
-
-      return matchesSearch && matchesRating && matchesPrice && matchesField && matchesExperience && matchesAvailability
+      const matchesPrice = (!mentor.hourlyRate || (mentor.hourlyRate >= filters.priceRange[0] && mentor.hourlyRate <= filters.priceRange[1]))
+      const matchesField = !filters.field || (mentor.domainExpertise && mentor.domainExpertise.includes(filters.field))
+      const matchesExperience = !filters.experience || (mentor.experience && mentor.experience.toString().includes(filters.experience))
+      // Availability filter can be customized if backend provides it
+      return matchesSearch && matchesRating && matchesPrice && matchesField && matchesExperience
     })
-  }, [searchQuery, filters, mentorData])
+  }, [searchQuery, filters, mentors])
 
   const postsPerPage = 12
   const totalPages = Math.ceil(filteredMentors.length / postsPerPage)
@@ -200,17 +175,10 @@ What I can help you with:
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Show mentor profile if selected */}
-        {selectedMentor ? (
-          <MentorProfile
-            mentor={selectedMentor}
-            onBack={handleBackToMentors}
-            isDarkMode={isDarkMode}
-            textClass={textClass}
-            mutedTextClass={mutedTextClass}
-            cardBgClass={cardBgClass}
-            borderClass={borderClass}
-          />
+        {loadingMentors ? (
+          <div className="text-center py-8">Loading mentors...</div>
+        ) : mentorError ? (
+          <div className="text-center py-8 text-red-500">{mentorError}</div>
         ) : (
           <>
             {/* Section Navigation */}
@@ -297,7 +265,7 @@ What I can help you with:
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                       {currentMentors.map((mentor, index) => (
                         <MentorCard
-                          key={mentor.id}
+                          key={mentor._id || mentor.id || index}
                           mentor={mentor}
                           index={index}
                           onSelect={handleMentorSelect}

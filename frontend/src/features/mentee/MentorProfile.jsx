@@ -20,6 +20,8 @@ import {
   Phone,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import BookCallModal from '../booking/BookCallModal';
+import { bookSession } from '../booking/bookingAPI';
 
 const StarRating = ({ rating, isDarkMode }) => {
   return (
@@ -78,6 +80,24 @@ export default function MentorProfile({
     const durationMultiplier = bookingForm.duration / 60
     return Math.round(basePrice * durationMultiplier)
   }
+
+  const handleSendBookingRequest = async ({ reason, scheduledDate, duration }) => {
+    try {
+      // You may need to get the auth token from your auth context or localStorage
+      const token = localStorage.getItem('token');
+      await bookSession({
+        mentorId: mentor._id,
+        title: 'Mentorship Session',
+        description: reason,
+        scheduledDate,
+        duration,
+        sessionType: 'video',
+      }, token);
+      alert('Booking request sent successfully!');
+    } catch (err) {
+      alert('Failed to send booking request. ' + (err?.response?.data?.message || err.message));
+    }
+  };
 
   return (
     <div className="py-6 max-w-4xl mx-auto">
@@ -510,6 +530,14 @@ export default function MentorProfile({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* BookCallModal Integration */}
+      <BookCallModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        onSendRequest={handleSendBookingRequest}
+        mentorName={mentor.name}
+      />
     </div>
   )
 }

@@ -17,6 +17,8 @@ import {
   User, Camera, X, Plus, Globe, Linkedin, Twitter, Building, Briefcase
 } from "lucide-react"
 
+import axios from "axios";
+
 const industries = [
   "Technology", "Healthcare", "Finance", "E-commerce", "Education", "Manufacturing", "Real Estate",
   "Media & Entertainment", "Food & Beverage", "Transportation", "Energy", "Other",
@@ -26,6 +28,30 @@ const interestOptions = [
   "Product Strategy", "Fundraising", "Team Building", "Marketing", "Sales", "Operations",
   "Technology", "Legal", "Finance", "Business Development", "Customer Success", "Growth Hacking",
 ]
+
+function sanitizeProfileData(data) {
+  const allowedFields = [
+    'name', 'bio', 'education', 'goals', 'areasOfInterest', 'company', 'experience', 'profilePic',
+    'domainExpertise', 'linkedinProfile', 'hourlyRate', 'availability'
+  ];
+  const sanitized = {};
+  for (const key of allowedFields) {
+    if (data[key] !== undefined && data[key] !== null && data[key] !== "") {
+      if (key === 'experience' || key === 'hourlyRate') {
+        sanitized[key] = Number(data[key]);
+        if (isNaN(sanitized[key])) delete sanitized[key];
+      } else if (key === 'profilePic') {
+        // Only send if it's a URL (not a data URI)
+        if (typeof data[key] === 'string' && !data[key].startsWith('data:image/')) {
+          sanitized[key] = data[key];
+        }
+      } else {
+        sanitized[key] = data[key];
+      }
+    }
+  }
+  return sanitized;
+}
 
 export default function MentorProfileSettings({
   profileData,
@@ -79,19 +105,28 @@ export default function MentorProfileSettings({
   }
 
   const handleSave = async () => {
-    setIsLoading(true)
-     const ab =  ()=> {
-      setTimeout(() => {
-      console.log(hello);
-      navigate("login")
-      }, 5000);
-      ab()
-      setIsLoading(false)
-
+    setIsLoading(true);
+    const sanitizedData = sanitizeProfileData(formData);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        "http://localhost:3000/user/profile",
+        sanitizedData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Fetch latest profile data and update state
+      const res = await axios.get("http://localhost:3000/user/profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFormData(res.data);
+      alert("Profile updated successfully!");
+      navigate("/login");
+    } catch (err) {
+      alert("Failed to update profile. " + (err?.response?.data?.message || err.message));
+    } finally {
+      setIsLoading(false);
     }
-      
-    navigate("/login")
-  }
+  };
 
   return (
     <div className={`p-6 sm:p-10 max-w-5xl mx-auto ${cardBgClass} ${textClass}`}>
@@ -305,7 +340,7 @@ export default function MentorProfileSettings({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {formData.interests.map((interest) => (
+          {(formData.interests || formData.areasOfInterest || []).map((interest) => (
             <motion.div key={interest} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Badge variant="secondary" className="bg-[#ff9ec6]/20 text-[#ff9ec6] border-[#ff9ec6]/30 pr-1">
                 {interest}

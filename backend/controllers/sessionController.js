@@ -1,6 +1,7 @@
 const Session = require("../models/session.model");
 const User = require("../models/user.model");
 const { z } = require("zod");
+const { sendSessionNotification } = require("../utils/emailService");
 
 // Create a new 1-on-1 session request (mentee-initiated)
 const createSession = async (req, res) => {
@@ -75,6 +76,19 @@ const createSession = async (req, res) => {
             .populate('mentor', 'name email profilePic')
             .populate('mentee', 'name email profilePic')
             .populate('participants.mentee', 'name email profilePic');
+
+        // Send email notification to mentor
+        await sendSessionNotification(
+            mentor.email,
+            mentor.name,
+            {
+                title,
+                scheduledDate,
+                duration,
+                description
+            },
+            'request'
+        );
 
         res.status(201).json({
             message: "1-on-1 session request created successfully",
